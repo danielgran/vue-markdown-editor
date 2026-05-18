@@ -44,6 +44,8 @@ jobs:
           npm version "$PRERELEASE_VERSION" --no-git-tag-version
 
       - name: Publish to npmjs
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
         run: |
           if [[ "$GITHUB_REF_NAME" != "main" && "$GITHUB_EVENT_NAME" == "push" ]]; then
             npm publish --tag dev
