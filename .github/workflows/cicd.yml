@@ -7,13 +7,13 @@ on:
     branches:
       - dev
       - main
+permissions:
+  contents: read
+  id-token: write
 
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
 
     steps:
       - name: Checkout
@@ -46,7 +46,7 @@ jobs:
       - name: Publish to npmjs
         run: |
           if [[ "$GITHUB_REF_NAME" != "main" && "$GITHUB_EVENT_NAME" == "push" ]]; then
-            npm publish --provenance --access public --tag dev
+            npm publish --tag dev
           else
-            npm publish --provenance --access public
+            npm publish
           fi
