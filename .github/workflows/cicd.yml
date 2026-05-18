@@ -27,9 +27,22 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Build package
-        run: npm run build
+      - name: Set prerelease version (non-main branches only)
+        if: github.ref != 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          BRANCH_NAME="${GITHUB_REF_NAME}"
+          # Sanitize: replace slashes and non-alphanumeric chars with hyphens
+          SAFE_BRANCH=$(echo "$BRANCH_NAME" | sed 's/[^a-zA-Z0-9]/-/g' | tr '[:upper:]' '[:lower:]')
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
+          BASE_VERSION=$(node -p "require('./package.json').version")
+          PRERELEASE_VERSION="${BASE_VERSION}-${SAFE_BRANCH}.${SHORT_SHA}"
+          echo "Publishing prerelease version: $PRERELEASE_VERSION"
+          npm version "$PRERELEASE_VERSION" --no-git-tag-version
 
       - name: Publish to npmjs
-        run: npm publish --provenance --access public
+        run: |
+          if [[ "$GITHUB_REF_NAME" != "main" && "$GITHUB_EVENT_NAME" == "push" ]]; then
+            npm publish --provenance --access public --tag dev
+          else
+            npm publish --provenance --access public
+          fi
