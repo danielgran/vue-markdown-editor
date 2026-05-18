@@ -64,7 +64,7 @@ import MarkdownEditorTextSelectionContextMenu from "./ContextMenu/MarkdownEditor
 import { isTextNodeState as isTextishNode } from "./MarkdownComponentRegistry";
 import MarkdownEditorModule from "./MarkdownEditorModule.vue";
 import type { MarkdownAstNode } from "./Types/MarkdownAstNode";
-import type MarkdownNodeType from "./Types/MarkdownAstNodeType";
+import MarkdownNodeType from "./Types/MarkdownAstNodeType";
 
 const props = defineProps({
   editor: {
@@ -124,7 +124,9 @@ function handleKeyDownOnNode(node: MarkdownAstNode, event: KeyboardEvent) {
   const nodeIndex = markdownNodes.value.indexOf(node);
 
   if (event.key === "Enter") {
-    handleEnter(nodeIndex, event);
+    if (node.type !== MarkdownNodeType.LIST) {
+      handleEnter(nodeIndex, event);
+    }
   } else if (event.key === "Backspace") {
     handleBackspace(nodeIndex);
   } else if (event.key === "ArrowUp") {
