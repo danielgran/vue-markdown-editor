@@ -1,0 +1,7 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`MarkdownModuleHeadline1 > renders correctly with default props 1`] = `
+<editor-content-stub
+  data-v-e0053ac5=""
+/>
+`;
