@@ -3,6 +3,9 @@ name: Publish Vue3 Package to npm
 on:
   release:
     types: [published]
+  push:
+    branches:
+      - dev
 
 jobs:
   build-and-publish:
