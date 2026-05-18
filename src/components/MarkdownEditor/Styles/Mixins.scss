@@ -1,0 +1,7 @@
+@mixin reset-contenteditable {
+  * {
+    outline: none;
+    border: none;
+    background: transparent;
+  }
+}
