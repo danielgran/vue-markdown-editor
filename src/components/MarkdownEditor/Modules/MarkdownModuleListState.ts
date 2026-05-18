@@ -1,7 +1,7 @@
 import type MarkdownModuleTextState from "./MarkdownModuleTextState";
 
 export default class MarkdownModuleListState {
-  items: MarkdownModuleTextState[];
+  items!: MarkdownModuleTextState[];
 
   constructor(object: MarkdownModuleListState) {
     Object.assign(this, object);

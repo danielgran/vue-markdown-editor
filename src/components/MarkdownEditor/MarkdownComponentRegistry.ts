@@ -4,6 +4,8 @@ import MarkdownModuleHeadline2 from "./Modules/MarkdownModuleHeadline2.vue";
 import MarkdownModuleHeadline3 from "./Modules/MarkdownModuleHeadline3.vue";
 import MarkdownModuleImage from "./Modules/MarkdownModuleImage.vue";
 import MarkdownModuleImageState from "./Modules/MarkdownModuleImageState";
+import MarkdownModuleList from "./Modules/MarkdownModuleList.vue";
+import MarkdownModuleListState from "./Modules/MarkdownModuleListState";
 import MarkdownModuleParagraph from "./Modules/MarkdownModuleParagraph.vue";
 import MarkdownModuleTextState from "./Modules/MarkdownModuleTextState";
 import type { MarkdownAstNode } from "./Types/MarkdownAstNode";
@@ -11,9 +13,7 @@ import MarkdownNodeType from "./Types/MarkdownAstNodeType";
 
 type MarkdownComponentRegistryEntry = {
   component: Component;
-  stateType: new (
-    object: MarkdownModuleTextState | MarkdownModuleImageState,
-  ) => MarkdownModuleTextState | MarkdownModuleImageState;
+  stateType: typeof MarkdownModuleTextState | typeof MarkdownModuleImageState | typeof MarkdownModuleListState;
 };
 
 const registry: Record<MarkdownNodeType, MarkdownComponentRegistryEntry> = {
@@ -32,6 +32,10 @@ const registry: Record<MarkdownNodeType, MarkdownComponentRegistryEntry> = {
   [MarkdownNodeType.HEADLINE3]: {
     component: MarkdownModuleHeadline3,
     stateType: MarkdownModuleTextState,
+  },
+  [MarkdownNodeType.LIST]: {
+    component: MarkdownModuleList,
+    stateType: MarkdownModuleListState,
   },
   [MarkdownNodeType.IMAGE]: {
     component: MarkdownModuleImage,

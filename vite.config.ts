@@ -13,12 +13,12 @@ export default defineConfig({
   build: {
     emptyOutDir: false,
     lib: {
-        formats: ['es'],
-        entry: resolve(import.meta.dirname, 'src', 'index.ts'),
-        fileName: 'vue-markdown-editor',
+      formats: ["es"],
+      entry: resolve(import.meta.dirname, "src", "index.ts"),
+      fileName: "vue-markdown-editor",
     },
     rollupOptions: {
-        external: ['vue', 'date-fns', '@date-fns/tz', '@floating-ui/vue', '@vueuse/core'],
+      external: ["vue"],
     },
-},
+    },
 });

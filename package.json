@@ -1,20 +1,67 @@
 {
-  "name": "vue-markdown-editor",
+  "name": "@grandaniel/vue-markdown-editor",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Vue 3 markdown editor component library.",
+  "main": "./dist/vue-markdown-editor.mjs",
+  "module": "./dist/vue-markdown-editor.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/vue-markdown-editor.mjs",
+      "default": "./dist/vue-markdown-editor.mjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "vue",
+    "vue3",
+    "markdown",
+    "editor",
+    "tiptap"
+  ],
+  "author": "danielgran",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danielgran/vue-markdown-editor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/danielgran/vue-markdown-editor/issues"
+  },
+  "homepage": "https://github.com/danielgran/vue-markdown-editor#readme",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vue-tsc -p tsconfig.build.json && vite build",
     "type-check": "vue-tsc --noEmit",
     "preview": "vite preview",
     "test": "vitest run"
   },
-  "author": "",
   "license": "ISC",
-  "description": "",
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  },
+  "sideEffects": [
+    "**/*.css",
+    "**/*.scss",
+    "**/*.vue"
+  ],
   "devDependencies": {
+    "@types/mdast": "^4.0.4",
     "@tsconfig/node22": "^22.0.5",
     "@types/node": "^22.19.19",
+    "@types/sortablejs": "^1.15.8",
+    "@types/turndown": "^5.0.5",
     "@vitejs/plugin-vue": "^6.0.7",
     "@vitest/coverage-v8": "^4.1.6",
     "@vue/test-utils": "^2.4.10",
@@ -35,6 +82,9 @@
     "@vueuse/core": "^14.3.0",
     "@vueuse/integrations": "^14.3.0",
     "marked": "^18.0.3",
+    "remark-parse": "^11.0.0",
+    "sortablejs": "^1.15.6",
+    "unified": "^11.0.5",
     "turndown": "^7.2.4"
   }
 }

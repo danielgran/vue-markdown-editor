@@ -2,13 +2,12 @@ import type MarkdownModuleImageState from "../Modules/MarkdownModuleImageState";
 import type MarkdownModuleTextState from "../Modules/MarkdownModuleTextState";
 import type MarkdownNodeType from "./MarkdownAstNodeType";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export class MarkdownAstNode<TState extends object = Record<string, any>> {
-  id: symbol;
-  type: MarkdownNodeType;
-  componentState: TState;
+export class MarkdownAstNode<TState extends object = object> {
+  id!: symbol;
+  type!: MarkdownNodeType;
+  componentState!: TState;
 
-  editingState: {
+  editingState!: {
     cursorPosition: number;
   };
 

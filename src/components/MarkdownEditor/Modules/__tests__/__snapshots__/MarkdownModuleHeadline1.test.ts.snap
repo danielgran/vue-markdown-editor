@@ -2,6 +2,6 @@
 
 exports[`MarkdownModuleHeadline1 > renders correctly with default props 1`] = `
 <editor-content-stub
-  data-v-e0053ac5=""
+  data-v-1b976d85=""
 />
 `;

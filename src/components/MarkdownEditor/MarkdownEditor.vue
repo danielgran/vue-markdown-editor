@@ -58,6 +58,7 @@
 <script lang="ts" setup>
 import { useSortable } from "@vueuse/integrations/useSortable";
 import { nextTick, ref, useTemplateRef, type PropType } from "vue";
+import type { SortableEvent } from "sortablejs";
 import type { MarkdownEditorInstance } from "./Composable/useMarkdownEditor";
 import MarkdownEditorTextSelectionContextMenu from "./ContextMenu/MarkdownEditorTextSelectionContextMenu.vue";
 import { isTextNodeState as isTextishNode } from "./MarkdownComponentRegistry";
@@ -84,11 +85,12 @@ const emit = defineEmits<{
 const { markdownNodes, deleteNode, addBlankNode, replaceNodeType, moveNode } = props.editor;
 
 const editorContainerRef = useTemplateRef("editorContainerRef");
-useSortable(editorContainerRef, markdownNodes, {
+useSortable(() => editorContainerRef.value, markdownNodes, {
   handle: ".drag-handle",
   animation: 150,
-  onUpdate: (e) => {
-    moveNode(e.oldIndex!, e.newIndex!);
+  onUpdate: (event: SortableEvent) => {
+    if (event.oldIndex == null || event.newIndex == null) return;
+    moveNode(event.oldIndex, event.newIndex);
   },
 });
 const focusedNode = ref<MarkdownAstNode | null>(props.focusedNode);
@@ -111,7 +113,7 @@ function handleChangeType(node: MarkdownAstNode, newType: MarkdownNodeType) {
   const result = replaceNodeType(node, newType);
 
   if (result) {
-    if (isTextishNode(result.newNode)) {
+    if (isTextishNode(result.newNode) && isTextishNode(node)) {
       result.newNode.componentState.text = node.componentState.text.slice(node.editingState.cursorPosition);
     }
     focusNodeByIndex(result.index);

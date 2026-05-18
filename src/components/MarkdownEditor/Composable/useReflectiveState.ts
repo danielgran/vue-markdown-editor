@@ -17,7 +17,7 @@ turndownService.escape = (text: string) => text;
 // on the next initialization (especially visible after HMR).
 turndownService.addRule("blockElementsToInline", {
   filter: ["h1", "h2", "h3", "h4", "h5", "h6", "p"],
-  replacement: (content) => content,
+  replacement: (content: string) => content,
 });
 
 function markdownToHtml(markdown: string): string {

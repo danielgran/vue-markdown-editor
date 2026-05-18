@@ -4,6 +4,7 @@ import { unified } from "unified";
 import { type ModelRef, nextTick, ref, watch } from "vue";
 import MarkdownNodeFactory from "../Factory/MarkdownNodeFactory";
 import { isTextNodeState } from "../MarkdownComponentRegistry";
+import type MarkdownModuleImageState from "../Modules/MarkdownModuleImageState";
 import type { MarkdownAstNode } from "../Types/MarkdownAstNode";
 import MarkdownNodeType, { isTextNodeType } from "../Types/MarkdownAstNodeType";
 
@@ -83,7 +84,7 @@ function useMarkdownProcessor(modelValue: ModelRef<string | undefined>) {
   function serializeMarkdown(): string {
     return markdownNodes.value
       .map((node) => {
-        if (isTextNodeType(node.type)) {
+        if (isTextNodeType(node.type) && isTextNodeState(node)) {
           const prefix = {
             [MarkdownNodeType.PARAGRAPH]: "",
             [MarkdownNodeType.LIST]: "",
@@ -94,10 +95,11 @@ function useMarkdownProcessor(modelValue: ModelRef<string | undefined>) {
           return `${prefix}${node.componentState.text}`;
         }
         if (node.type === MarkdownNodeType.IMAGE) {
+          const imageState = node.componentState as MarkdownModuleImageState;
           return `"""MarkdownModuleImage
-src: ${node.componentState.src}
-alt: ${node.componentState.alt}
-caption: ${node.componentState.caption}
+src: ${imageState.src}
+alt: ${imageState.alt}
+caption: ${imageState.caption}
 """`;
         }
         return "";
