@@ -5,7 +5,7 @@ Vue 3 markdown editor component library.
 ## Installation
 
 ```bash
-npm install @grandaniel/vue-markdown-editor sortablejs
+npm install @grandaniel/vue-markdown-editor
 ```
 
 ## Quick Start
