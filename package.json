@@ -4,6 +4,7 @@
   "description": "Vue 3 markdown editor component library.",
   "main": "./dist/vue-markdown-editor.mjs",
   "module": "./dist/vue-markdown-editor.mjs",
+  "private": false,
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
