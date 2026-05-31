@@ -28,7 +28,9 @@ function htmlToMarkdown(html: string): string {
   return turndownService.turndown(html);
 }
 
-function useReflectiveState<T extends MarkdownModuleTextState>(options: {
+export { markdownToHtml, htmlToMarkdown };
+
+export default function useReflectiveState<T extends MarkdownModuleTextState>(options: {
   modelRef: ModelRef<T>;
   emit: TextishEmitFunction;
   editorRef?: Ref<InstanceType<typeof EditorContent> | undefined>;
@@ -79,6 +81,3 @@ function useReflectiveState<T extends MarkdownModuleTextState>(options: {
 
   return { handleTipTapUpdateEvent, handleKeyDown, editorContent, expose: { focus } };
 }
-
-export { markdownToHtml };
-export default useReflectiveState;

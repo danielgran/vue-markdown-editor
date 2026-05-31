@@ -1,0 +1,52 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`MarkdownEditorContextMenu > placement: above > renders with transform translateY above anchor when placement is 'above' 1`] = `
+<teleport-stub
+  data-v-b71240c5=""
+  to="body"
+>
+  <div
+    class="markdown-editor-context-menu"
+    data-v-b71240c5=""
+    style="left: 300px; top: 150px; transform: translateX(-50%) translateY(calc(-100% - 8px));"
+  >
+    
+    
+  </div>
+</teleport-stub>
+`;
+
+exports[`MarkdownEditorContextMenu > placement: below (default) > renders with left/top inline styles when no placement is given 1`] = `
+<teleport-stub
+  data-v-b71240c5=""
+  to="body"
+>
+  <div
+    class="markdown-editor-context-menu"
+    data-v-b71240c5=""
+    style="left: 100px; top: 200px;"
+  >
+    
+    
+  </div>
+</teleport-stub>
+`;
+
+exports[`MarkdownEditorContextMenu > slot content > renders default slot content 1`] = `
+<teleport-stub
+  data-v-b71240c5=""
+  to="body"
+>
+  <div
+    class="markdown-editor-context-menu"
+    data-v-b71240c5=""
+    style="left: 0px; top: 0px;"
+  >
+    
+    <span>
+      Menu Item
+    </span>
+    
+  </div>
+</teleport-stub>
+`;

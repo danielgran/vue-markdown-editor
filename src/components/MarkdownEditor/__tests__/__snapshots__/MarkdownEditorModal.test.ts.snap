@@ -1,0 +1,137 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`MarkdownEditorModal > hidden state > renders nothing when show is false 1`] = `
+<teleport-stub
+  data-v-697631f9=""
+  to="body"
+>
+  <!--v-if-->
+</teleport-stub>
+`;
+
+exports[`MarkdownEditorModal > visible state > renders the modal with title and slot content when show is true 1`] = `
+<teleport-stub
+  data-v-697631f9=""
+  to="body"
+>
+  <div
+    class="markdown-editor-modal-overlay"
+    data-v-697631f9=""
+  >
+    <div
+      class="markdown-editor-modal"
+      data-v-697631f9=""
+    >
+      <div
+        class="markdown-editor-modal-header"
+        data-v-697631f9=""
+      >
+        <h3
+          class="markdown-editor-modal-title"
+          data-v-697631f9=""
+        >
+          Edit Image Attributes
+        </h3>
+        <button
+          class="markdown-editor-modal-close"
+          data-v-697631f9=""
+          type="button"
+        >
+           × 
+        </button>
+      </div>
+      <div
+        class="markdown-editor-modal-body"
+        data-v-697631f9=""
+      >
+        
+        <p>
+          Modal body content
+        </p>
+        
+      </div>
+      <div
+        class="markdown-editor-modal-footer"
+        data-v-697631f9=""
+      >
+        <button
+          class="markdown-editor-modal-button markdown-editor-modal-button-secondary"
+          data-v-697631f9=""
+          type="button"
+        >
+           Cancel 
+        </button>
+        <button
+          class="markdown-editor-modal-button markdown-editor-modal-button-primary"
+          data-v-697631f9=""
+          type="button"
+        >
+           Save 
+        </button>
+      </div>
+    </div>
+  </div>
+</teleport-stub>
+`;
+
+exports[`MarkdownEditorModal > visible state > renders with a different title 1`] = `
+<teleport-stub
+  data-v-697631f9=""
+  to="body"
+>
+  <div
+    class="markdown-editor-modal-overlay"
+    data-v-697631f9=""
+  >
+    <div
+      class="markdown-editor-modal"
+      data-v-697631f9=""
+    >
+      <div
+        class="markdown-editor-modal-header"
+        data-v-697631f9=""
+      >
+        <h3
+          class="markdown-editor-modal-title"
+          data-v-697631f9=""
+        >
+          Confirm Delete
+        </h3>
+        <button
+          class="markdown-editor-modal-close"
+          data-v-697631f9=""
+          type="button"
+        >
+           × 
+        </button>
+      </div>
+      <div
+        class="markdown-editor-modal-body"
+        data-v-697631f9=""
+      >
+        
+        
+      </div>
+      <div
+        class="markdown-editor-modal-footer"
+        data-v-697631f9=""
+      >
+        <button
+          class="markdown-editor-modal-button markdown-editor-modal-button-secondary"
+          data-v-697631f9=""
+          type="button"
+        >
+           Cancel 
+        </button>
+        <button
+          class="markdown-editor-modal-button markdown-editor-modal-button-primary"
+          data-v-697631f9=""
+          type="button"
+        >
+           Save 
+        </button>
+      </div>
+    </div>
+  </div>
+</teleport-stub>
+`;

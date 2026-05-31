@@ -1,25 +1,27 @@
 <template>
   <MarkdownEditorContextMenu
-    :x="x"
-    :y="y"
+    v-if="isVisible"
+    :x="anchorX"
+    :y="anchorY"
+    placement="above"
   >
     <MarkdownEditorContextMenuInlineItem
-      :active="isActive.bold"
-      @click="emit('toggle-bold')"
+      :active="activeStates.bold"
+      @click="toggleFormat('bold')"
     >
       <strong>B</strong>
     </MarkdownEditorContextMenuInlineItem>
 
     <MarkdownEditorContextMenuInlineItem
-      :active="isActive.italic"
-      @click="emit('toggle-italic')"
+      :active="activeStates.italic"
+      @click="toggleFormat('italic')"
     >
       <em>I</em>
     </MarkdownEditorContextMenuInlineItem>
 
     <MarkdownEditorContextMenuInlineItem
-      :active="isActive.underline"
-      @click="emit('toggle-underline')"
+      :active="activeStates.underline"
+      @click="toggleFormat('underline')"
     >
       <span style="text-decoration: underline">U</span>
     </MarkdownEditorContextMenuInlineItem>
@@ -27,19 +29,16 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  x: number;
-  y: number;
-  isActive: {
-    bold: boolean;
-    italic: boolean;
-    underline: boolean;
-  };
-}>();
+import useTextSelectionMenu from "../Composable/useTextSelectionMenu";
+import MarkdownEditorContextMenu from "./MarkdownEditorContextMenu.vue";
+import MarkdownEditorContextMenuInlineItem from "./MarkdownEditorContextMenuInlineItem.vue";
 
-const emit = defineEmits<{
-  "toggle-bold": [];
-  "toggle-italic": [];
-  "toggle-underline": [];
-}>();
+const { isVisible, anchorX, anchorY, activeStates, hide } = useTextSelectionMenu();
+
+function toggleFormat(command: "bold" | "italic" | "underline") {
+  // execCommand applies formatting to the active contenteditable selection.
+  // TipTap's onUpdate fires after the DOM change, keeping reactive state consistent.
+  document.execCommand(command);
+  hide();
+}
 </script>

@@ -1,0 +1,57 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`MarkdownEditorModule > focused state > renders with focus controls slot visible when focused 1`] = `
+<div
+  class="markdown-editor-module is-focused"
+  data-v-aa63b222=""
+>
+  <div
+    class="markdown-editor-module-controls"
+    data-v-aa63b222=""
+  >
+    
+    <button>
+      Delete
+    </button>
+    
+  </div>
+  <div
+    class="markdown-editor-module-content markdown-editor-module-content-focused"
+    data-v-aa63b222=""
+  >
+    <div
+      data-stub="module-component"
+      data-v-aa63b222=""
+      model-value="[object Object]"
+    />
+  </div>
+  
+  
+</div>
+`;
+
+exports[`MarkdownEditorModule > unfocused state > renders without focus controls when not focused and not hovered 1`] = `
+<div
+  class="markdown-editor-module"
+  data-v-aa63b222=""
+>
+  <div
+    class="markdown-editor-module-controls"
+    data-v-aa63b222=""
+  >
+    
+    
+  </div>
+  <div
+    class="markdown-editor-module-content"
+    data-v-aa63b222=""
+  >
+    <markdown-module-paragraph-stub
+      data-v-aa63b222=""
+      modelvalue="[object Object]"
+    />
+  </div>
+  
+  
+</div>
+`;

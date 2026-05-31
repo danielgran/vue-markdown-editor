@@ -5,6 +5,7 @@ import { type ModelRef, nextTick, ref, watch } from "vue";
 import MarkdownNodeFactory from "../Factory/MarkdownNodeFactory";
 import { isTextNodeState } from "../MarkdownComponentRegistry";
 import type MarkdownModuleImageState from "../Modules/MarkdownModuleImageState";
+import type MarkdownModuleListState from "../Modules/MarkdownModuleListState";
 import type { MarkdownAstNode } from "../Types/MarkdownAstNode";
 import MarkdownNodeType, { isTextNodeType } from "../Types/MarkdownAstNodeType";
 
@@ -77,6 +78,15 @@ function useMarkdownProcessor(modelValue: ModelRef<string | undefined>) {
         markdownNodes.value.push(
           MarkdownNodeFactory.createTextNode(MarkdownNodeType.HEADLINE3, phrasingContentToText(node.children)),
         );
+      } else if (node.type === "list") {
+        const items = node.children.map((listItem) => {
+          const firstParagraph = listItem.children.find(c => c.type === "paragraph");
+          if (firstParagraph && firstParagraph.type === "paragraph") {
+            return phrasingContentToText(firstParagraph.children);
+          }
+          return "";
+        });
+        markdownNodes.value.push(MarkdownNodeFactory.createListNode(items));
       }
     }
   }
@@ -93,6 +103,10 @@ function useMarkdownProcessor(modelValue: ModelRef<string | undefined>) {
             [MarkdownNodeType.HEADLINE3]: "### ",
           }[node.type];
           return `${prefix}${node.componentState.text}`;
+        }
+        if (node.type === MarkdownNodeType.LIST) {
+          const listState = node.componentState as MarkdownModuleListState;
+          return listState.items.map(item => `- ${item.text}`).join("\n");
         }
         if (node.type === MarkdownNodeType.IMAGE) {
           const imageState = node.componentState as MarkdownModuleImageState;
@@ -126,13 +140,16 @@ caption: ${imageState.caption}
   }
 
   function createNodeWithType(text: string, newType: MarkdownNodeType): MarkdownAstNode {
+    if (newType === MarkdownNodeType.LIST) {
+      return MarkdownNodeFactory.createListNode(text ? [text] : [""]);
+    }
     if (isTextNodeType(newType)) {
       return MarkdownNodeFactory.createTextNode(newType, text);
-    } else if (newType === MarkdownNodeType.IMAGE) {
-      return MarkdownNodeFactory.createImageNode("", "", "");
-    } else {
-      throw new Error(`Unsupported node type: ${newType}`);
     }
+    if (newType === MarkdownNodeType.IMAGE) {
+      return MarkdownNodeFactory.createImageNode("", "", "");
+    }
+    throw new Error(`Unsupported node type: ${newType}`);
   }
 
   function replaceNodeType(

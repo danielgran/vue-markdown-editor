@@ -1,0 +1,34 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`MarkdownEditorFocusControls > rendering > renders the drag handle and both action buttons 1`] = `
+<div
+  class="markdown-editor-focus-controls"
+  data-v-7fe57acf=""
+>
+  <span
+    class="drag-handle"
+    data-v-7fe57acf=""
+    title="Drag to reorder"
+  >
+     ⠿ 
+  </span>
+  <button
+    class="focus-control-btn"
+    data-v-7fe57acf=""
+    tabindex="-1"
+    title="Delete block"
+    type="button"
+  >
+     🗑️ 
+  </button>
+  <button
+    class="focus-control-btn"
+    data-v-7fe57acf=""
+    tabindex="-1"
+    title="Add block below"
+    type="button"
+  >
+     + 
+  </button>
+</div>
+`;

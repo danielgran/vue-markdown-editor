@@ -1,0 +1,49 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`MarkdownEditorImageContextMenu > position variants > renders with zero position 1`] = `
+<markdowneditorcontextmenu
+  data-v-4d3118c8=""
+  x="0"
+  y="0"
+>
+  <div
+    class="markdown-editor-image-context-menu-content"
+    data-v-4d3118c8=""
+  >
+    <markdowneditorcontextmenublockitem
+      data-v-4d3118c8=""
+    >
+       Edit Attributes 
+    </markdowneditorcontextmenublockitem>
+    <markdowneditorcontextmenublockitem
+      data-v-4d3118c8=""
+    >
+       Edit Attributes 
+    </markdowneditorcontextmenublockitem>
+  </div>
+</markdowneditorcontextmenu>
+`;
+
+exports[`MarkdownEditorImageContextMenu > rendering > renders correctly with x and y position props 1`] = `
+<markdowneditorcontextmenu
+  data-v-4d3118c8=""
+  x="50"
+  y="120"
+>
+  <div
+    class="markdown-editor-image-context-menu-content"
+    data-v-4d3118c8=""
+  >
+    <markdowneditorcontextmenublockitem
+      data-v-4d3118c8=""
+    >
+       Edit Attributes 
+    </markdowneditorcontextmenublockitem>
+    <markdowneditorcontextmenublockitem
+      data-v-4d3118c8=""
+    >
+       Edit Attributes 
+    </markdowneditorcontextmenublockitem>
+  </div>
+</markdowneditorcontextmenu>
+`;

@@ -1,0 +1,27 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`MarkdownEditorTextSelectionContextMenu > hidden state > renders nothing when isVisible is false 1`] = `<!--v-if-->`;
+
+exports[`MarkdownEditorTextSelectionContextMenu > visible state — all active > renders with all formatting active 1`] = `
+<markdown-editor-context-menu-stub
+  placement="above"
+  x="0"
+  y="0"
+/>
+`;
+
+exports[`MarkdownEditorTextSelectionContextMenu > visible state — bold active > renders with bold active state 1`] = `
+<markdown-editor-context-menu-stub
+  placement="above"
+  x="0"
+  y="0"
+/>
+`;
+
+exports[`MarkdownEditorTextSelectionContextMenu > visible state — no active formatting > renders the context menu above the anchor point when visible 1`] = `
+<markdown-editor-context-menu-stub
+  placement="above"
+  x="400"
+  y="250"
+/>
+`;

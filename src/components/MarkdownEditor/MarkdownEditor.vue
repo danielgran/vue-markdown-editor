@@ -3,8 +3,8 @@
     ref="editorContainerRef"
     class="markdown-editor"
     @click="handleClickBlankArea"
-    @mouseup="handleMouseUp"
   >
+  <template v-if="markdownNodes.length > 0">
     <MarkdownEditorModule
       v-for="(node, index) in markdownNodes"
       :key="node.id"
@@ -17,50 +17,34 @@
       @change-type="handleChangeType"
     >
       <template #focus-controls>
-        <span
-          class="drag-handle"
-          title="Drag to reorder"
-        >
-          ⠿
-        </span>
-        <button
-          type="button"
-          tabindex="-1"
-          @click="deleteNode(index)"
-        >
-          🗑️
-        </button>
-        <button
-          type="button"
-          tabindex="-1"
-          @click="addBlankNode(index)"
-        >
-          +
-        </button>
+        <MarkdownEditorFocusControls
+          @delete="deleteNode(index)"
+          @add="addBlankNode(index)"
+        />
       </template>
       <template #after-controls>
+        <!-- Additional controls can be added here -->
         <slot name="after-controls" />
       </template>
     </MarkdownEditorModule>
-
-    <MarkdownEditorTextSelectionContextMenu
-      v-if="showContextMenu"
-      :x="contextMenuPosition.x"
-      :y="contextMenuPosition.y"
-      :is-active="contextMenuActiveStates"
-      @toggle-bold="toggleBold"
-      @toggle-italic="toggleItalic"
-      @toggle-underline="toggleUnderline"
-    />
+  </template>
+  <template v-else>
+    <p
+      class="text-gray-500 italic"
+    >
+      Click here to start writing...
+    </p>
+  </template>
+    <MarkdownEditorTextSelectionContextMenu />
   </div>
 </template>
 
 <script lang="ts" setup>
 import { useSortable } from "@vueuse/integrations/useSortable";
 import { nextTick, ref, useTemplateRef, type PropType } from "vue";
-import type { SortableEvent } from "sortablejs";
 import type { MarkdownEditorInstance } from "./Composable/useMarkdownEditor";
 import MarkdownEditorTextSelectionContextMenu from "./ContextMenu/MarkdownEditorTextSelectionContextMenu.vue";
+import MarkdownEditorFocusControls from "./MarkdownEditorFocusControls.vue";
 import { isTextNodeState as isTextishNode } from "./MarkdownComponentRegistry";
 import MarkdownEditorModule from "./MarkdownEditorModule.vue";
 import type { MarkdownAstNode } from "./Types/MarkdownAstNode";
@@ -82,28 +66,14 @@ const emit = defineEmits<{
   (e: "update:focused-node", value: MarkdownAstNode | null): void;
 }>();
 
-const { markdownNodes, deleteNode, addBlankNode, replaceNodeType, moveNode } = props.editor;
+const { markdownNodes, deleteNode, addBlankNode, replaceNodeType } = props.editor;
 
 const editorContainerRef = useTemplateRef("editorContainerRef");
 useSortable(() => editorContainerRef.value, markdownNodes, {
   handle: ".drag-handle",
   animation: 150,
-  onUpdate: (event: SortableEvent) => {
-    if (event.oldIndex == null || event.newIndex == null) return;
-    moveNode(event.oldIndex, event.newIndex);
-  },
 });
 const focusedNode = ref<MarkdownAstNode | null>(props.focusedNode);
-
-// Context menu state
-const showContextMenu = ref(false);
-const contextMenuPosition = ref({ x: 0, y: 0 });
-const contextMenuActiveStates = ref({
-  bold: false,
-  italic: false,
-  underline: false,
-});
-let selectionDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 function handleUpdateCursorPosition(node: MarkdownAstNode, position: number) {
   node.editingState.cursorPosition = position;
@@ -229,109 +199,49 @@ function moveFocusOneDown() {
   });
 }
 
-// Context menu handlers
-function handleMouseUp() {
-  // Clear existing timer
-  if (selectionDebounceTimer) {
-    clearTimeout(selectionDebounceTimer);
-  }
 
-  const selection = window.getSelection();
-
-  if (!selection || selection.isCollapsed || selection.toString().trim() === "") {
-    showContextMenu.value = false;
-    return;
-  }
-
-  // Debounce: wait 500ms before showing context menu
-  selectionDebounceTimer = setTimeout(() => {
-    const range = selection.getRangeAt(0);
-    const rect = range.getBoundingClientRect();
-
-    // Position the context menu above the selection
-    contextMenuPosition.value = {
-      x: rect.left + rect.width / 2 - 75, // Center and offset
-      y: rect.top - 50, // Position above selection
-    };
-
-    // Detect active formatting states
-    const parentElement = range.commonAncestorContainer.parentElement;
-    if (parentElement) {
-      contextMenuActiveStates.value = {
-        bold: isElementOrParentTagName(parentElement, ["STRONG", "B"]),
-        italic: isElementOrParentTagName(parentElement, ["EM", "I"]),
-        underline: isElementOrParentTagName(parentElement, ["U"]),
-      };
-    }
-
-    showContextMenu.value = true;
-  }, 500);
-}
-
-function isElementOrParentTagName(element: HTMLElement, tagNames: string[]): boolean {
-  let current: HTMLElement | null = element;
-  while (current) {
-    if (tagNames.includes(current.tagName)) {
-      return true;
-    }
-    current = current.parentElement;
-  }
-  return false;
-}
-
-function toggleBold() {
-  document.execCommand("bold");
-  showContextMenu.value = false;
-}
-
-function toggleItalic() {
-  document.execCommand("italic");
-  showContextMenu.value = false;
-}
-
-function toggleUnderline() {
-  document.execCommand("underline");
-  showContextMenu.value = false;
-}
 </script>
 
-<style>
-/* Basic global style  */
-p {
-  margin: 0.5rem 0;
-}
+<style lang="scss" scoped>
+.markdown-editor {
+  padding-left: 6rem;
 
-strong,
-b {
-  font-weight: bold;
-}
+  :deep(p) {
+    margin: 0.5rem 0;
+  }
 
-em,
-i {
-  font-style: italic;
-}
+  :deep(strong),
+  :deep(b) {
+    font-weight: bold;
+  }
 
-code {
-  font-family: monospace;
-  background: rgba(127, 127, 127, 0.15);
-  padding: 0.1em 0.3em;
-  border-radius: 3px;
-  font-size: 0.9em;
-  color: green;
-}
+  :deep(em),
+  :deep(i) {
+    font-style: italic;
+  }
 
-h1 {
-  font-size: 2em;
-  margin: 0;
-}
+  :deep(code) {
+    font-family: monospace;
+    background: rgba(127, 127, 127, 0.15);
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
+    font-size: 0.9em;
+    color: green;
+  }
 
-h2 {
-  font-size: 1.5em;
-  margin: 0;
-}
+  :deep(h1) {
+    font-size: 2em;
+    margin: 0;
+  }
 
-h3 {
-  font-size: 1.17em;
-  margin: 0;
+  :deep(h2) {
+    font-size: 1.5em;
+    margin: 0;
+  }
+
+  :deep(h3) {
+    font-size: 1.17em;
+    margin: 0;
+  }
 }
 </style>

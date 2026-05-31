@@ -1,0 +1,27 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`MarkdownEditorContextMenuBlockItem > rendering > renders correctly with default slot content 1`] = `
+<button
+  class="markdown-editor-context-menu-block-item"
+  data-v-f276dde0=""
+  type="button"
+>
+  
+  Edit Attributes
+  
+</button>
+`;
+
+exports[`MarkdownEditorContextMenuBlockItem > slot content > renders arbitrary slot content inside the button 1`] = `
+<button
+  class="markdown-editor-context-menu-block-item"
+  data-v-f276dde0=""
+  type="button"
+>
+  
+  <span>
+    Custom Action
+  </span>
+  
+</button>
+`;

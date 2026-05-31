@@ -1,0 +1,5 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`MarkdownModuleParagraph > rendering > renders correctly with an empty text state 1`] = `<editor-content-stub />`;
+
+exports[`MarkdownModuleParagraph > rendering > renders correctly with text content 1`] = `<editor-content-stub />`;

@@ -1,0 +1,45 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`MarkdownModuleImage > rendering > renders correctly with empty src and alt 1`] = `
+<div
+  class="markdown-module-image"
+  data-v-2577ab21=""
+>
+  <img
+    alt=""
+    data-v-2577ab21=""
+    src=""
+  />
+  <!--v-if-->
+  <!--v-if-->
+  <markdown-editor-modal-stub
+    data-v-2577ab21=""
+    show="false"
+    title="Edit Image Attributes"
+  />
+</div>
+`;
+
+exports[`MarkdownModuleImage > rendering > renders correctly with full image state 1`] = `
+<div
+  class="markdown-module-image"
+  data-v-2577ab21=""
+>
+  <img
+    alt="An example image"
+    data-v-2577ab21=""
+    src="https://example.com/image.png"
+  />
+  <span
+    data-v-2577ab21=""
+  >
+    A caption
+  </span>
+  <!--v-if-->
+  <markdown-editor-modal-stub
+    data-v-2577ab21=""
+    show="false"
+    title="Edit Image Attributes"
+  />
+</div>
+`;

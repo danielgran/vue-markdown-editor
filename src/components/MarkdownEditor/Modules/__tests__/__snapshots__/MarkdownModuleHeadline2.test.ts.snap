@@ -1,0 +1,13 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`MarkdownModuleHeadline2 > rendering > renders correctly with an empty text state 1`] = `
+<editor-content-stub
+  data-v-e4ec455c=""
+/>
+`;
+
+exports[`MarkdownModuleHeadline2 > rendering > renders correctly with text content 1`] = `
+<editor-content-stub
+  data-v-e4ec455c=""
+/>
+`;

@@ -2,11 +2,10 @@
   <div
     ref="markdownEditorModuleRef"
     class="markdown-editor-module"
+    :class="{ 'is-focused': props.focused }"
   >
     <div class="markdown-editor-module-controls">
-      <template v-if="focused || mouseOver">
-        <slot name="focus-controls" />
-      </template>
+      <slot name="focus-controls" />
     </div>
     <div
       ref="contentRef"
@@ -31,8 +30,8 @@
 </template>
 
 <script lang="ts" setup>
-import { useFocusWithin, useMouseInElement } from "@vueuse/core";
-import { computed, onMounted, ref, useTemplateRef, watch, type PropType } from "vue";
+import { useFocusWithin } from "@vueuse/core";
+import { onMounted, ref, useTemplateRef, watch, type PropType } from "vue";
 import type { MarkdownAstNode } from "./Types/MarkdownAstNode";
 
 import ComponentRegistry from "./MarkdownComponentRegistry";
@@ -66,8 +65,6 @@ const markdownEditorModuleRef = useTemplateRef("markdownEditorModuleRef");
 const contentRef = useTemplateRef("contentRef");
 const moduleComponentRef = ref<{ focus: () => void } | null>(null);
 const innerElementFocus = useFocusWithin(contentRef);
-const mouseInTarget = useMouseInElement(markdownEditorModuleRef);
-const mouseOver = computed(() => !mouseInTarget.isOutside.value);
 
 // Handle external focus changes
 watch(
@@ -91,7 +88,6 @@ watch(innerElementFocus.focused, (isFocused) => {
 .markdown-editor-module {
   display: flex;
   flex-direction: row;
-  gap: 1rem;
 
   :deep(.tiptap) {
     outline: none;
@@ -102,24 +98,21 @@ watch(innerElementFocus.focused, (isFocused) => {
     outline: none;
   }
 
-  .drag-handle {
-    cursor: grab;
-    padding: 0 0.25rem;
-    user-select: none;
-    font-size: 1rem;
-    opacity: 0.5;
-
-    &:active {
-      cursor: grabbing;
-    }
+  .markdown-editor-module-controls {
+    min-width: 5rem;
+    max-width: 5rem;
+    visibility: hidden;
   }
 
-  .markdown-editor-module-controls {
-    width: 6rem;
-    display: flex;
-    flex-direction: row;
-    gap: 0.25rem;
-    align-items: center;
+  &:hover {
+    background: rgba(158, 149, 149, 0.05);
+  }
+
+  &:hover,
+  &.is-focused {
+    .markdown-editor-module-controls {
+      visibility: visible;
+    }
   }
 
   .markdown-editor-module-content-focused {

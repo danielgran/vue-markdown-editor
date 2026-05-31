@@ -1,19 +1,10 @@
 <template>
   <div class="dev-app">
-    <header class="dev-header">
-      <h1>Markdown Editor – Dev Playground</h1>
-    </header>
-
-    <main class="dev-main">
-      <section class="editor-section">
-        <h2>Editor</h2>
-        <MarkdownEditor :editor="editor" />
-      </section>
-
-      <section class="output-section">
-        <h2>Markdown Output</h2>
-        <pre class="output-pre">{{ editor.markdownContent.value }}</pre>
-      </section>
+    <aside class="dev-output">
+      <pre>{{ editor.markdownContent.value }}</pre>
+    </aside>
+    <main class="dev-editor">
+      <MarkdownEditor :editor="editor" />
     </main>
   </div>
 </template>
@@ -34,65 +25,30 @@ const editor = useMarkdownEditor("# Hello World\n\nStart editing here...");
 
 body {
   font-family: system-ui, sans-serif;
-  background: #f5f5f5;
-  color: #1a1a1a;
 }
 </style>
 
 <style scoped>
 .dev-app {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.dev-header {
-  background: #1a1a1a;
-  color: #fff;
-  padding: 1rem 2rem;
-}
-
-.dev-header h1 {
-  font-size: 1.25rem;
-  font-weight: 600;
-}
-
-.dev-main {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  padding: 1.5rem 2rem;
-  flex: 1;
+  grid-template-columns: 1fr 2fr;
+  min-height: 100vh;
 }
 
-.editor-section,
-.output-section {
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+.dev-output {
   padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  border-right: 1px solid #ccc;
+  overflow: auto;
+
+  pre {
+    font-family: monospace;
+    font-size: 0.8rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
 }
 
-h2 {
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #666;
-}
-
-.output-pre {
-  font-family: "Courier New", monospace;
-  font-size: 0.875rem;
-  white-space: pre-wrap;
-  word-break: break-word;
-  flex: 1;
-  background: #f9f9f9;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  padding: 0.75rem;
+.dev-editor {
+  padding: 2rem;
 }
 </style>
