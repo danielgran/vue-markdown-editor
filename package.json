@@ -1,6 +1,6 @@
 {
   "name": "@grandaniel/vue-markdown-editor",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Vue 3 markdown editor component library.",
   "main": "./dist/vue-markdown-editor.mjs",
   "module": "./dist/vue-markdown-editor.mjs",
