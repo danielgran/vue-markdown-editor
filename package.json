@@ -11,8 +11,13 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/vue-markdown-editor.mjs",
       "default": "./dist/vue-markdown-editor.mjs"
-    }
+    },
+    "./style.css": "./dist/vue-markdown-editor.css",
+    "./dist/*": "./dist/*"
   },
+  "sideEffects": [
+    "**/*.css"
+  ],
   "files": [
     "dist",
     "README.md",
