@@ -1,6 +1,6 @@
 {
   "name": "@grandaniel/vue-markdown-editor",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "Vue 3 markdown editor component library.",
   "main": "./dist/vue-markdown-editor.mjs",
   "module": "./dist/vue-markdown-editor.mjs",
@@ -16,7 +16,9 @@
     "./dist/*": "./dist/*"
   },
   "sideEffects": [
-    "**/*.css"
+    "**/*.css",
+    "**/*.scss",
+    "**/*.vue"
   ],
   "files": [
     "dist",
@@ -57,11 +59,6 @@
   "peerDependencies": {
     "vue": "^3.5.0"
   },
-  "sideEffects": [
-    "**/*.css",
-    "**/*.scss",
-    "**/*.vue"
-  ],
   "devDependencies": {
     "@types/mdast": "^4.0.4",
     "@tsconfig/node22": "^22.0.5",
