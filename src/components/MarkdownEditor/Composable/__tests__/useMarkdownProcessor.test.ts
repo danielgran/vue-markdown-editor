@@ -712,12 +712,12 @@ describe("useMarkdownProcessor", () => {
       expect(mockCreateListNode).toHaveBeenCalledWith([""]);
     });
 
-    it("handles paragraph with null text value via ?? fallback", () => {
-      // Arrange — mock parser returns paragraph with text child where value is null
+    it("handles paragraph with undefined text value via ?? fallback", () => {
+      // Arrange — mock parser returns paragraph with text child where value is undefined
       mockUnifiedParse.mockReturnValue({
         children: [{
           type: "paragraph",
-          children: [{ type: "text", value: null }],
+          children: [{ type: "text", value: undefined }],
         }],
       });
 
@@ -725,8 +725,32 @@ describe("useMarkdownProcessor", () => {
       const model = makeModel("ignored");
       const { markdownNodes } = useMarkdownProcessor(model);
 
-      // Assert — node.children[0].value ?? "" fallback hit
-      expect(mockCreateTextNode).toHaveBeenCalledWith(MarkdownNodeType.PARAGRAPH, "");
+      // Assert — node.children[0].value ?? "" fallback hit, phrasingContentToText sees "undefined"
+      expect(mockCreateTextNode).toHaveBeenCalledWith(MarkdownNodeType.PARAGRAPH, "undefined");
+    });
+
+    it("handles triple-quote block where split returns empty array", () => {
+      // Arrange — monkey-patch String.split so that a triple-quoted marker
+      // returns an empty array, hitting the (text.split("\n")[0] ?? "") branch
+      const originalSplit = String.prototype.split;
+      const splitStub = function (this: string, separator: any, limit?: any): string[] {
+        if (this.startsWith('"""SPLIT_EMPTY')) return [];
+        return originalSplit.call(this, separator, limit) as string[];
+      };
+      String.prototype.split = splitStub;
+
+      try {
+        const model = makeModel('"""SPLIT_EMPTY\nsome: value\n"""');
+
+        // Act
+        const { markdownNodes } = useMarkdownProcessor(model);
+
+        // Assert — moduleName from split fallback is ""; falls through to regular text
+        expect(markdownNodes.value).toHaveLength(1);
+        expect(markdownNodes.value[0]?.type).toBe(MarkdownNodeType.PARAGRAPH);
+      } finally {
+        String.prototype.split = originalSplit;
+      }
     });
   });
 
