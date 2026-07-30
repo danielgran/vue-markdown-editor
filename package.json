@@ -53,7 +53,8 @@
     "build": "vue-tsc -p tsconfig.build.json && vite build",
     "type-check": "vue-tsc --noEmit",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "license": "ISC",
   "peerDependencies": {
