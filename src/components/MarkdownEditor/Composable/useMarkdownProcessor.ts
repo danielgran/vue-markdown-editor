@@ -139,6 +139,18 @@ caption: ${imageState.caption}
     return nodeIndex + 1;
   }
 
+  function addNodeWithType(nodeIndex: number, type: MarkdownNodeType, content: string = ""): number {
+    const newNode = createNodeWithType(content, type);
+
+    if (nodeIndex !== undefined) {
+      markdownNodes.value.splice(nodeIndex + 1, 0, newNode);
+    } else {
+      markdownNodes.value.push(newNode);
+    }
+
+    return nodeIndex + 1;
+  }
+
   function createNodeWithType(text: string, newType: MarkdownNodeType): MarkdownAstNode {
     if (newType === MarkdownNodeType.LIST) {
       return MarkdownNodeFactory.createListNode(text ? [text] : [""]);
@@ -147,7 +159,7 @@ caption: ${imageState.caption}
       return MarkdownNodeFactory.createTextNode(newType, text);
     }
     if (newType === MarkdownNodeType.IMAGE) {
-      return MarkdownNodeFactory.createImageNode("", "", "");
+      return MarkdownNodeFactory.createImageNode(text, "", "");
     }
     throw new Error(`Unsupported node type: ${newType}`);
   }
@@ -179,6 +191,7 @@ caption: ${imageState.caption}
     markdownNodes,
     deleteNode,
     addBlankNode,
+    addNodeWithType,
     replaceNodeType,
     moveNode,
   };

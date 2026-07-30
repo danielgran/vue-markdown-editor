@@ -32,7 +32,7 @@
     <p
       class="text-gray-500 italic"
     >
-      Click here to start writing...
+      Click to start writing...
     </p>
   </template>
     <MarkdownEditorTextSelectionContextMenu />
@@ -41,7 +41,7 @@
 
 <script lang="ts" setup>
 import { useSortable } from "@vueuse/integrations/useSortable";
-import { nextTick, ref, useTemplateRef, type PropType } from "vue";
+import { nextTick, onMounted, ref, useTemplateRef, type PropType } from "vue";
 import type { MarkdownEditorInstance } from "./Composable/useMarkdownEditor";
 import MarkdownEditorTextSelectionContextMenu from "./ContextMenu/MarkdownEditorTextSelectionContextMenu.vue";
 import MarkdownEditorFocusControls from "./MarkdownEditorFocusControls.vue";
@@ -60,13 +60,17 @@ const props = defineProps({
     required: false,
     default: null,
   },
+  imageUploadFunction: {
+    type: Function as PropType<(file: File) => Promise<string>>,
+    required: false,
+  },
 });
 
 const emit = defineEmits<{
   (e: "update:focused-node", value: MarkdownAstNode | null): void;
 }>();
 
-const { markdownNodes, deleteNode, addBlankNode, replaceNodeType } = props.editor;
+const { markdownNodes, deleteNode, addBlankNode, addNodeWithType, replaceNodeType } = props.editor;
 
 const editorContainerRef = useTemplateRef("editorContainerRef");
 useSortable(() => editorContainerRef.value, markdownNodes, {
@@ -158,6 +162,31 @@ function handleClickBlankArea() {
   focusNodeByIndex(newIndex);
 }
 
+function handlePaste(event: ClipboardEvent) {
+  const clipboardData = event.clipboardData;
+  if (!clipboardData) return;
+
+  const items = clipboardData.items;
+  if (!items) return;
+
+  for (const item of items) {
+    if (item.type.startsWith("image/")) {
+      const file = item.getAsFile();
+      if (file && props.imageUploadFunction) {
+        props.imageUploadFunction(file).then((url) => {
+          const currentNodeIndex = markdownNodes.value.indexOf(focusedNode.value!);
+
+          addNodeWithType(currentNodeIndex + 1, MarkdownNodeType.IMAGE, url);
+          nextTick(() => {
+            focusedNode.value = getNodeByIndex(currentNodeIndex + 1);
+          });
+        });
+      }
+      break; // Only process the first image to avoid duplicates from multiple MIME types
+    }
+  }
+}
+
 function focusNodeByIndex(index: number) {
   const node = markdownNodes.value[index];
   if (!node) return;
@@ -198,6 +227,10 @@ function moveFocusOneDown() {
     }
   });
 }
+
+onMounted(() => {
+  document.addEventListener("paste", handlePaste);
+});
 
 
 </script>

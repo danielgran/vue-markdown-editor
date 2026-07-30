@@ -61,6 +61,7 @@
 
 <script lang="ts" setup>
 import { ref } from "vue";
+import MarkdownEditorImageContextMenu from "../ContextMenu/MarkdownEditorImageContextMenu.vue";
 import MarkdownEditorModal from "../MarkdownEditorModal.vue";
 import type MarkdownModuleImageState from "./MarkdownModuleImageState";
 

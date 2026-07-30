@@ -80,6 +80,10 @@ function useTextSelectionMenu() {
   }
 
   function handleMouseDown(event: MouseEvent) {
+    // If the event was already handled (e.g. prevented by the context menu itself),
+    // don't hide the menu — let the interaction with the menu proceed.
+    if (event.defaultPrevented) return;
+
     // Hide when clicking outside a contenteditable
     const target = event.target as HTMLElement | null;
     if (!target?.isContentEditable) {

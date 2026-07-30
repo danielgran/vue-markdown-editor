@@ -4,10 +4,7 @@
     :y="y"
   >
     <div class="markdown-editor-image-context-menu-content">
-      <MarkdownEditorContextMenuBlockItem @click="emit('edit-attributes')">
-        Edit Attributes
-      </MarkdownEditorContextMenuBlockItem>
-      <MarkdownEditorContextMenuBlockItem @click="emit('edit-attributes')">
+      <MarkdownEditorContextMenuBlockItem @click="emit('editAttributes')">
         Edit Attributes
       </MarkdownEditorContextMenuBlockItem>
     </div>
@@ -15,13 +12,16 @@
 </template>
 
 <script setup lang="ts">
+import MarkdownEditorContextMenu from "./MarkdownEditorContextMenu.vue";
+import MarkdownEditorContextMenuBlockItem from "./MarkdownEditorContextMenuBlockItem.vue";
+
 defineProps<{
   x: number;
   y: number;
 }>();
 
 const emit = defineEmits<{
-  "edit-attributes": [];
+  editAttributes: [];
 }>();
 </script>
 

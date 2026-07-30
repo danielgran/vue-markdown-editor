@@ -9,6 +9,7 @@
 import StarterKit from "@tiptap/starter-kit";
 import { EditorContent, useEditor } from "@tiptap/vue-3";
 import { ref } from "vue";
+import { activeEditor } from "../Composable/activeEditorStore";
 import useReflectiveState from "../Composable/useReflectiveState";
 import { HeadingDocument, PreventNewline } from "../TipTap/SingleLineExtension";
 import type { TextishEmits } from "../Types/TextishEmits";
@@ -48,10 +49,13 @@ const editor = useEditor({
     PreventNewline,
   ],
   content: `<h1>${state.editorContent.value}</h1>`,
+  onFocus: () => {
+    activeEditor.value = editor.value ?? null;
+  },
   onUpdate: (event) => state.handleTipTapUpdateEvent(event),
 });
 
-defineExpose(state.expose);
+defineExpose({ ...state.expose, editor });
 </script>
 
 <style lang="scss" scoped>
