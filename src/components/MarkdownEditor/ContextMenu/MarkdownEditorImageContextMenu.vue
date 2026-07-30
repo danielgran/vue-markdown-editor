@@ -1,6 +1,7 @@
 <template>
   <MarkdownEditorContextMenu
     :x="x"
+    ref="contextMenuRef"
     :y="y"
   >
     <div class="markdown-editor-image-context-menu-content">
@@ -12,8 +13,12 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
 import MarkdownEditorContextMenu from "./MarkdownEditorContextMenu.vue";
 import MarkdownEditorContextMenuBlockItem from "./MarkdownEditorContextMenuBlockItem.vue";
+import { onClickOutside } from "@vueuse/core";
+
+const contextMenuRef = ref<InstanceType<typeof MarkdownEditorContextMenu> | null>(null);
 
 defineProps<{
   x: number;
@@ -22,7 +27,12 @@ defineProps<{
 
 const emit = defineEmits<{
   editAttributes: [];
+  close: [];
 }>();
+
+onClickOutside(contextMenuRef, () => {
+  emit('close');
+});
 </script>
 
 <style lang="scss" scoped>
