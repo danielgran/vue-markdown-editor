@@ -162,7 +162,7 @@ function handleClickBlankArea() {
   focusNodeByIndex(newIndex);
 }
 
-function handlePaste(event: ClipboardEvent) {
+async function handlePaste(event: ClipboardEvent) {
   const clipboardData = event.clipboardData;
   if (!clipboardData) return;
 
@@ -173,7 +173,7 @@ function handlePaste(event: ClipboardEvent) {
     if (item.type.startsWith("image/")) {
       const file = item.getAsFile();
       if (file && props.imageUploadFunction) {
-        props.imageUploadFunction(file).then((url) => {
+        await props.imageUploadFunction(file).then((url) => {
           const currentNodeIndex = markdownNodes.value.indexOf(focusedNode.value!);
 
           addNodeWithType(currentNodeIndex + 1, MarkdownNodeType.IMAGE, url);
