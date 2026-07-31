@@ -186,11 +186,14 @@ async function handlePaste(event: ClipboardEvent) {
             focusedNode.value = getNodeByIndex(currentNodeIndex + 1);
           });
         });
-        break; // Only process the first image to avoid duplicates from multiple MIME types
       }
+      break; // Only process the first image to avoid duplicates from multiple MIME types
     }
+  }
 
-    if (item.kind === "file") {
+  // Handle non-image file paste
+  for (const item of items) {
+    if (item.kind === "file" && !item.type.startsWith("image/")) {
       const file = item.getAsFile();
       if (file && props.fileUploadFunction) {
         const currentNodeIndex = markdownNodes.value.indexOf(focusedNode.value!);
@@ -224,10 +227,9 @@ async function handlePaste(event: ClipboardEvent) {
             fileState.uploadError = error instanceof Error ? error.message : "Upload failed";
           }
         });
-        break; // Only process the first file to avoid duplicates from multiple MIME types
       }
+      break;
     }
-
   }
 }
 

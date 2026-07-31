@@ -25,6 +25,8 @@ exports[`MarkdownModuleFile > rendering > renders success state with download ca
         data-v-09d2b7a1=""
         download="document.pdf"
         href="https://example.com/document.pdf"
+        rel="noopener noreferrer"
+        target="_blank"
       >
         document.pdf
       </a>

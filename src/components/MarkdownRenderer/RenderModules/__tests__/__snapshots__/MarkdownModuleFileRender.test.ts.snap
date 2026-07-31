@@ -20,6 +20,8 @@ exports[`MarkdownModuleFileRender > rendering > renders download card with file 
       data-v-ef28c0fc=""
       download="document.pdf"
       href="https://example.com/document.pdf"
+      rel="noopener noreferrer"
+      target="_blank"
     >
       document.pdf
     </a>
