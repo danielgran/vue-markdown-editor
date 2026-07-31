@@ -47,6 +47,7 @@ import MarkdownEditorTextSelectionContextMenu from "./ContextMenu/MarkdownEditor
 import MarkdownEditorFocusControls from "./MarkdownEditorFocusControls.vue";
 import { isTextNodeState as isTextishNode } from "./MarkdownComponentRegistry";
 import MarkdownEditorModule from "./MarkdownEditorModule.vue";
+import type MarkdownModuleFileState from "./Modules/MarkdownModuleFileState";
 import type { MarkdownAstNode } from "./Types/MarkdownAstNode";
 import MarkdownNodeType from "./Types/MarkdownAstNodeType";
 
@@ -61,6 +62,10 @@ const props = defineProps({
     default: null,
   },
   imageUploadFunction: {
+    type: Function as PropType<(file: File) => Promise<string>>,
+    required: false,
+  },
+  fileUploadFunction: {
     type: Function as PropType<(file: File) => Promise<string>>,
     required: false,
   },
@@ -181,9 +186,48 @@ async function handlePaste(event: ClipboardEvent) {
             focusedNode.value = getNodeByIndex(currentNodeIndex + 1);
           });
         });
+        break; // Only process the first image to avoid duplicates from multiple MIME types
       }
-      break; // Only process the first image to avoid duplicates from multiple MIME types
     }
+
+    if (item.kind === "file") {
+      const file = item.getAsFile();
+      if (file && props.fileUploadFunction) {
+        const currentNodeIndex = markdownNodes.value.indexOf(focusedNode.value!);
+        const newNodeIndex = addNodeWithType(
+          currentNodeIndex + 1,
+          MarkdownNodeType.FILE,
+          JSON.stringify({
+            url: "",
+            fileName: file.name,
+            fileSize: file.size,
+            mimeType: file.type,
+            uploadError: "",
+          }),
+        );
+
+        nextTick(() => {
+          focusedNode.value = getNodeByIndex(newNodeIndex);
+        });
+
+        // Upload and update the node
+        await props.fileUploadFunction(file).then((url) => {
+          const node = getNodeByIndex(newNodeIndex);
+          if (node && node.type === MarkdownNodeType.FILE) {
+            const fileState = node.componentState as MarkdownModuleFileState;
+            fileState.url = url;
+          }
+        }).catch((error) => {
+          const node = getNodeByIndex(newNodeIndex);
+          if (node && node.type === MarkdownNodeType.FILE) {
+            const fileState = node.componentState as MarkdownModuleFileState;
+            fileState.uploadError = error instanceof Error ? error.message : "Upload failed";
+          }
+        });
+        break; // Only process the first file to avoid duplicates from multiple MIME types
+      }
+    }
+
   }
 }
 

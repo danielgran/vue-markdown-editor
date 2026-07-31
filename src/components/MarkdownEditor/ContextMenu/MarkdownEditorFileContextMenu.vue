@@ -6,9 +6,15 @@
     @mousedown.stop
     @click="$emit('click')"
   >
-    <div class="markdown-editor-image-context-menu-content">
+    <div class="markdown-editor-file-context-menu-content">
       <MarkdownEditorContextMenuBlockItem @click="emit('editAttributes')">
         Edit Attributes
+      </MarkdownEditorContextMenuBlockItem>
+      <MarkdownEditorContextMenuBlockItem @click="emit('download')">
+        Download
+      </MarkdownEditorContextMenuBlockItem>
+      <MarkdownEditorContextMenuBlockItem @click="emit('retry')">
+        Retry Upload
       </MarkdownEditorContextMenuBlockItem>
     </div>
   </MarkdownEditorContextMenu>
@@ -29,6 +35,8 @@ defineProps<{
 
 const emit = defineEmits<{
   editAttributes: [];
+  download: [];
+  retry: [];
   close: [];
   click: [];
 }>();
@@ -42,7 +50,7 @@ onClickOutside(
 </script>
 
 <style lang="scss" scoped>
-.markdown-editor-image-context-menu-content {
+.markdown-editor-file-context-menu-content {
   display: flex;
   flex-direction: column;
   gap: 0.125rem;

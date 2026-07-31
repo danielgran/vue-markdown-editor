@@ -5,13 +5,15 @@ import MarkdownNodeType from "../../Types/MarkdownAstNodeType";
 import MarkdownModuleTextState from "../../Modules/MarkdownModuleTextState";
 import MarkdownModuleImageState from "../../Modules/MarkdownModuleImageState";
 import MarkdownModuleListState from "../../Modules/MarkdownModuleListState";
+import MarkdownModuleFileState from "../../Modules/MarkdownModuleFileState";
 
 // --- Hoist mock functions so they are available when vi.mock factory runs ---
-const { mockCreateTextNode, mockCreateImageNode, mockCreateBlankParagraph, mockCreateListNode, mockUnifiedParse } = vi.hoisted(() => ({
+const { mockCreateTextNode, mockCreateImageNode, mockCreateBlankParagraph, mockCreateListNode, mockCreateFileNode, mockUnifiedParse } = vi.hoisted(() => ({
   mockCreateTextNode: vi.fn(),
   mockCreateImageNode: vi.fn(),
   mockCreateBlankParagraph: vi.fn(),
   mockCreateListNode: vi.fn(),
+  mockCreateFileNode: vi.fn(),
   mockUnifiedParse: vi.fn(),
 }));
 
@@ -31,6 +33,7 @@ vi.mock("../../Factory/MarkdownNodeFactory", () => ({
     createImageNode: mockCreateImageNode,
     createBlankParagraph: mockCreateBlankParagraph,
     createListNode: mockCreateListNode,
+    createFileNode: mockCreateFileNode,
   },
 }));
 
@@ -54,6 +57,13 @@ const makeFakeListNode = (items: string[]): MarkdownAstNode<MarkdownModuleListSt
     editingState: { cursorPosition: 0 },
   });
 
+const makeFakeFileNode = (url: string, fileName: string, fileSize: number, mimeType: string, uploadError = ""): MarkdownAstNode<MarkdownModuleFileState> =>
+  new MarkdownAstNode({
+    type: MarkdownNodeType.FILE,
+    componentState: new MarkdownModuleFileState({ url, fileName, fileSize, mimeType, uploadError }),
+    editingState: { cursorPosition: 0 },
+  });
+
 // Import SUT after mocks
 import useMarkdownProcessor from "../useMarkdownProcessor";
 
@@ -74,6 +84,9 @@ describe("useMarkdownProcessor", () => {
     );
     mockCreateBlankParagraph.mockImplementation(() => makeFakeTextNode(MarkdownNodeType.PARAGRAPH, ""));
     mockCreateListNode.mockImplementation((items: string[]) => makeFakeListNode(items));
+    mockCreateFileNode.mockImplementation((url: string, fileName: string, fileSize: number, mimeType: string, uploadError = "") =>
+      makeFakeFileNode(url, fileName, fileSize, mimeType, uploadError),
+    );
   });
 
   // Helper: wrap a string in a ModelRef-like ref
@@ -157,6 +170,20 @@ describe("useMarkdownProcessor", () => {
       expect(mockCreateImageNode).toHaveBeenCalledWith("https://example.com/img.png", "A picture", "My caption");
     });
 
+    it("parses the custom file block syntax into a FILE node", () => {
+      // Arrange
+      const fileMarkdown = '"""MarkdownModuleFile\nurl: https://example.com/doc.pdf\nfileName: report.pdf\nfileSize: 1024\nmimeType: application/pdf\n"""';
+      const model = makeModel(fileMarkdown);
+
+      // Act
+      const { markdownNodes } = useMarkdownProcessor(model);
+
+      // Assert
+      expect(markdownNodes.value).toHaveLength(1);
+      expect(markdownNodes.value[0]?.type).toBe(MarkdownNodeType.FILE);
+      expect(mockCreateFileNode).toHaveBeenCalledWith("https://example.com/doc.pdf", "report.pdf", 1024, "application/pdf");
+    });
+
     it("initializes nodes from empty string without error", () => {
       // Arrange
       const model = makeModel("");
@@ -217,6 +244,29 @@ describe("useMarkdownProcessor", () => {
 
     it("serializes a HEADLINE3 node with '### ' prefix", async () => {
       // Arrange
+      c
+
+    it("serializes a FILE node with custom block syntax", async () => {
+      // Arrange
+      const fileMarkdown = '"""MarkdownModuleFile\nurl: https://example.com/doc.pdf\nfileName: report.pdf\nfileSize: 1024\nmimeType: application/pdf\n"""';
+      const model = makeModel(fileMarkdown);
+      const { markdownNodes } = useMarkdownProcessor(model);
+
+      // Act — mutate the file state
+      const node = markdownNodes.value[0] as MarkdownAstNode<MarkdownModuleFileState>;
+      node.componentState.url = "https://example.com/new.pdf";
+      node.componentState.fileName = "updated.pdf";
+      await nextTick();
+      await nextTick();
+
+      // Assert
+      expect(model.value).toContain('"""MarkdownModuleFile');
+      expect(model.value).toContain("url: https://example.com/new.pdf");
+      expect(model.value).toContain("fileName: updated.pdf");
+    });
+
+    it("serializes a HEADLINE3 node with '### ' prefix", async () => {
+      // Arrange
       const model = makeModel("### Original");
       const { markdownNodes } = useMarkdownProcessor(model);
 
@@ -264,6 +314,30 @@ describe("useMarkdownProcessor", () => {
     });
   });
 
+
+  describe("addNodeWithType", () => {
+    it("inserts a FILE node with JSON-encoded metadata", async () => {
+      // Arrange
+      const model = makeModel("# Title");
+      const { markdownNodes, addNodeWithType } = useMarkdownProcessor(model);
+
+      // Act
+      const fileData = JSON.stringify({
+        url: "",
+        fileName: "test.pdf",
+        fileSize: 2048,
+        mimeType: "application/pdf",
+        uploadError: "",
+      });
+      const newIndex = addNodeWithType(0, MarkdownNodeType.FILE, fileData);
+      await nextTick();
+
+      // Assert
+      expect(markdownNodes.value).toHaveLength(2);
+      expect(markdownNodes.value[1]?.type).toBe(MarkdownNodeType.FILE);
+      expect(newIndex).toBe(1);
+    });
+  });
   describe("deleteNode", () => {
     it("removes the node at the given index after nextTick", async () => {
       // Arrange

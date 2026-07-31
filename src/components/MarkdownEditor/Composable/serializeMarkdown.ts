@@ -1,4 +1,5 @@
 import { isTextNodeState } from "../MarkdownComponentRegistry";
+import type MarkdownModuleFileState from "../Modules/MarkdownModuleFileState";
 import type MarkdownModuleImageState from "../Modules/MarkdownModuleImageState";
 import type MarkdownModuleListState from "../Modules/MarkdownModuleListState";
 import type { MarkdownAstNode } from "../Types/MarkdownAstNode";
@@ -27,6 +28,15 @@ export function serializeMarkdown(nodes: MarkdownAstNode[]): string {
 src: ${imageState.src}
 alt: ${imageState.alt}
 caption: ${imageState.caption}
+"""`;
+      }
+      if (node.type === MarkdownNodeType.FILE) {
+        const fileState = node.componentState as MarkdownModuleFileState;
+        return `"""MarkdownModuleFile
+url: ${fileState.url}
+fileName: ${fileState.fileName}
+fileSize: ${fileState.fileSize}
+mimeType: ${fileState.mimeType}
 """`;
       }
       return "";

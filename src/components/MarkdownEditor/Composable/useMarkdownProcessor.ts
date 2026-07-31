@@ -1,6 +1,7 @@
 import { type ModelRef, nextTick, ref, watch } from "vue";
 import MarkdownNodeFactory from "../Factory/MarkdownNodeFactory";
 import { isTextNodeState } from "../MarkdownComponentRegistry";
+import type MarkdownModuleFileState from "../Modules/MarkdownModuleFileState";
 import type { MarkdownAstNode } from "../Types/MarkdownAstNode";
 import MarkdownNodeType, { isTextNodeType } from "../Types/MarkdownAstNodeType";
 import { parseMarkdown } from "./parseMarkdown";
@@ -68,6 +69,16 @@ function useMarkdownProcessor(modelValue: ModelRef<string | undefined>) {
     }
     if (newType === MarkdownNodeType.IMAGE) {
       return MarkdownNodeFactory.createImageNode(text, "", "");
+    }
+    if (newType === MarkdownNodeType.FILE) {
+      const data = JSON.parse(text) as MarkdownModuleFileState;
+      return MarkdownNodeFactory.createFileNode(
+        data.url,
+        data.fileName,
+        data.fileSize,
+        data.mimeType,
+        data.uploadError,
+      );
     }
     throw new Error(`Unsupported node type: ${newType}`);
   }

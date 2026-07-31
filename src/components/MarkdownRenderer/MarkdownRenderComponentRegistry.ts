@@ -1,5 +1,6 @@
 import type { Component } from "vue";
 import MarkdownNodeType from "../MarkdownEditor/Types/MarkdownAstNodeType";
+import MarkdownModuleFileRender from "./RenderModules/MarkdownModuleFileRender.vue";
 import MarkdownModuleHeadline1Render from "./RenderModules/MarkdownModuleHeadline1Render.vue";
 import MarkdownModuleHeadline2Render from "./RenderModules/MarkdownModuleHeadline2Render.vue";
 import MarkdownModuleHeadline3Render from "./RenderModules/MarkdownModuleHeadline3Render.vue";
@@ -17,6 +18,7 @@ const RenderComponentRegistry: Record<MarkdownNodeType, RenderComponent> = {
   [MarkdownNodeType.HEADLINE3]: MarkdownModuleHeadline3Render,
   [MarkdownNodeType.LIST]: MarkdownModuleListRender,
   [MarkdownNodeType.IMAGE]: MarkdownModuleImageRender,
+  [MarkdownNodeType.FILE]: MarkdownModuleFileRender,
 };
 
 export default RenderComponentRegistry;

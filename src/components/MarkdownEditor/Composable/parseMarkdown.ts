@@ -32,6 +32,22 @@ export function parseMarkdown(markdown: string): MarkdownAstNode[] {
           );
           continue;
         }
+        if (moduleName === "MarkdownModuleFile") {
+          const urlMatch = text.match(/url:\s*(\S+)/);
+          const fileNameMatch = text.match(/fileName:\s*(.+)/);
+          const fileSizeMatch = text.match(/fileSize:\s*(\d+)/);
+          const mimeTypeMatch = text.match(/mimeType:\s*(.+)/);
+
+          nodes.push(
+            MarkdownNodeFactory.createFileNode(
+              urlMatch?.[1] ?? "",
+              fileNameMatch?.[1] ?? "",
+              parseInt(fileSizeMatch?.[1] ?? "0", 10),
+              mimeTypeMatch?.[1] ?? "",
+            ),
+          );
+          continue;
+        }
       }
 
       // Regular text node

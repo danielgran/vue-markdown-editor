@@ -5,6 +5,7 @@ enum MarkdownNodeType {
   HEADLINE3,
   IMAGE,
   LIST,
+  FILE,
 }
 
 export type TextishNodeType

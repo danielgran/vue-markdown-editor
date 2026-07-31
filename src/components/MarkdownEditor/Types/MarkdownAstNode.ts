@@ -1,3 +1,4 @@
+import type MarkdownModuleFileState from "../Modules/MarkdownModuleFileState";
 import type MarkdownModuleImageState from "../Modules/MarkdownModuleImageState";
 import type MarkdownModuleTextState from "../Modules/MarkdownModuleTextState";
 import type MarkdownNodeType from "./MarkdownAstNodeType";
@@ -19,3 +20,4 @@ export class MarkdownAstNode<TState extends object = object> {
 
 export type TextNode = MarkdownAstNode<MarkdownModuleTextState>;
 export type ImageNode = MarkdownAstNode<MarkdownModuleImageState>;
+export type FileNode = MarkdownAstNode<MarkdownModuleFileState>;

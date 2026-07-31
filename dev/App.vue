@@ -43,7 +43,9 @@
           <kbd>↑</kbd>/<kbd>↓</kbd> to navigate, and drag the handle (⠿) to reorder.
         </p>
       </div>
-      <MarkdownEditor :editor="editor" :image-upload-function="handleUploadImage" />
+      <MarkdownEditor :editor="editor" :image-upload-function="handleUploadImage"
+      :file-upload-function="handleFileupload"
+      />
     </main>
   </div>
 </template>
@@ -108,6 +110,15 @@ async function handleUploadImage(file: File): Promise<string> {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(`https://placehold.co/600x400?text=${encodeURIComponent(file.name)}`);
+    }, 1000);
+  });
+}
+
+async function handleFileupload(file: File): Promise<string> {
+  // Simulate a file upload and return a URL
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(`https://example.com/files/${encodeURIComponent(file.name)}`);
     }, 1000);
   });
 }
