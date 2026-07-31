@@ -2,7 +2,24 @@
   <div class="dev-app">
     <aside class="dev-output">
       <div class="dev-output-header">
-        <h2>Markdown Output</h2>
+        <nav class="dev-tabs">
+          <button
+            type="button"
+            class="dev-tab"
+            :class="{ active: activeTab === 'raw' }"
+            @click="activeTab = 'raw'"
+          >
+            Raw
+          </button>
+          <button
+            type="button"
+            class="dev-tab"
+            :class="{ active: activeTab === 'preview' }"
+            @click="activeTab = 'preview'"
+          >
+            Preview
+          </button>
+        </nav>
         <button
           type="button"
           class="copy-btn"
@@ -12,7 +29,10 @@
           {{ copySuccess ? '✓ Copied!' : '📋 Copy' }}
         </button>
       </div>
-      <pre>{{ editor.markdownContent.value }}</pre>
+      <pre v-if="activeTab === 'raw'">{{ editor.markdownContent.value }}</pre>
+      <div v-else class="dev-preview">
+        <MarkdownRenderer :markdown="editor.markdownContent.value" />
+      </div>
     </aside>
     <main class="dev-editor">
       <div class="dev-editor-header">
@@ -31,8 +51,10 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 import MarkdownEditor from "@/components/MarkdownEditor/MarkdownEditor.vue";
+import MarkdownRenderer from "@/components/MarkdownRenderer/MarkdownRenderer.vue";
 import { useMarkdownEditor } from "@/components/MarkdownEditor/Composable/useMarkdownEditor";
 
+const activeTab = ref<"raw" | "preview">("raw");
 const copySuccess = ref(false);
 
 const editor = useMarkdownEditor(`# Welcome to vue-markdown-editor
@@ -144,19 +166,39 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem 1.25rem;
+    padding: 0.5rem 1.25rem;
     border-bottom: 1px solid #e2e8f0;
     background: #f1f5f9;
     position: sticky;
     top: 0;
     z-index: 10;
 
-    h2 {
-      font-size: 0.85rem;
+    .dev-tabs {
+      display: flex;
+      gap: 0;
+    }
+
+    .dev-tab {
+      font-size: 0.8rem;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: #64748b;
+      padding: 0.5rem 0.85rem;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s ease;
+
+      &:hover {
+        color: #64748b;
+      }
+
+      &.active {
+        color: #0f172a;
+        border-bottom-color: #3b82f6;
+      }
     }
 
     .copy-btn {
@@ -190,6 +232,12 @@ body {
     word-break: break-word;
     padding: 1.25rem;
     color: #334155;
+  }
+
+  .dev-preview {
+    padding: 1.25rem;
+    line-height: 1.7;
+    overflow: auto;
   }
 }
 

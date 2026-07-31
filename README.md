@@ -204,6 +204,64 @@ Returns a reactive editor instance:
 | `TextishNodeType` | Type — union of `PARAGRAPH \| HEADLINE1 \| HEADLINE2 \| HEADLINE3 \| LIST`. |
 | `isTextNodeState(node)` | Type guard for text‑based nodes. |
 | `isTextNodeType(type)` | Type guard for text‑based node types. |
+| `MarkdownRenderer` | Component — renders Markdown to plain HTML. SSR‑safe. |
+
+---
+
+## MarkdownRenderer
+
+`<MarkdownRenderer>` converts a Markdown string to plain HTML. It uses the same `remark-parse` pipeline as the editor, so custom module blocks (like `"""MarkdownModuleImage"""`) render as rich `<figure>` elements automatically.
+
+The renderer is **SSR‑safe** — no browser APIs, no TipTap. It works in `nuxt generate`, `vite-ssg`, and any server‑side rendering context.
+
+```vue
+<script setup lang="ts">
+import { MarkdownRenderer } from "@grandaniel/vue-markdown-editor";
+
+const markdown = `# Hello World
+
+This is a **paragraph** with *inline* formatting.
+
+- List item 1
+- List item 2
+
+"""MarkdownModuleImage
+src: https://example.com/photo.jpg
+alt: A scenic view
+caption: Photo caption
+"""
+`;
+</script>
+
+<template>
+  <MarkdownRenderer :markdown="markdown" />
+</template>
+```
+
+### Live preview alongside the editor
+
+Bind the editor's reactive `markdownContent` to the renderer:
+
+```vue
+<script setup lang="ts">
+import { MarkdownEditor, MarkdownRenderer, useMarkdownEditor } from "@grandaniel/vue-markdown-editor";
+
+const editor = useMarkdownEditor("# Start writing…");
+</script>
+
+<template>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+    <MarkdownEditor :editor="editor" />
+    <MarkdownRenderer :markdown="editor.markdownContent.value" />
+  </div>
+</template>
+```
+
+### Props
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `markdown` | `string` | ✓ | Raw Markdown string to render as HTML. |
 
 ---
 
