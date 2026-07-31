@@ -13,7 +13,7 @@
 
 <script lang="ts" setup>
 import { computed } from "vue";
-import { useMarkdownEditor } from "../MarkdownEditor/Composable/useMarkdownEditor";
+import { parseMarkdown } from "../MarkdownEditor/Composable/parseMarkdown";
 import RenderComponentRegistry from "./MarkdownRenderComponentRegistry";
 
 const props = defineProps({
@@ -23,7 +23,5 @@ const props = defineProps({
   },
 })
 
-const editor = useMarkdownEditor(props.markdown);
-
-const nodes = computed(() => editor.markdownNodes.value);
+const nodes = computed(() => parseMarkdown(props.markdown));
 </script>
