@@ -242,10 +242,6 @@ describe("useMarkdownProcessor", () => {
       expect(model.value).toBe("## Sub Title");
     });
 
-    it("serializes a HEADLINE3 node with '### ' prefix", async () => {
-      // Arrange
-      c
-
     it("serializes a FILE node with custom block syntax", async () => {
       // Arrange
       const fileMarkdown = '"""MarkdownModuleFile\nurl: https://example.com/doc.pdf\nfileName: report.pdf\nfileSize: 1024\nmimeType: application/pdf\n"""';
