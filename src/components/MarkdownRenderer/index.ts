@@ -1,2 +1,2 @@
 export { default as MarkdownRenderer } from "./MarkdownRenderer.vue";
-export { default as RenderComponentRegistry } from "./MarkdownRenderComponentRegistry";
+export { useMarkdownRenderer, type MarkdownRendererInstance, type RenderComponent, type RenderStateMap } from "./Composable/useMarkdownRenderer";
