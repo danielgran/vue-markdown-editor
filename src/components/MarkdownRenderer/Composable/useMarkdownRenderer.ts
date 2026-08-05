@@ -60,7 +60,10 @@ export function useMarkdownRenderer() {
     type: K,
     component: RenderComponent<RenderStateMap[K]>,
   ): void {
-    componentRegistry[type] = component;
+    // TypeScript can't prove assignability when indexing a mapped type with a generic K.
+    // This is safe because the function signature already enforces the correct state type.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (componentRegistry as any)[type] = component;
   }
 
   return {
