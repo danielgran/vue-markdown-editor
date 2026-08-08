@@ -1,25 +1,23 @@
-import type { PhrasingContent } from "mdast";
-import remarkParse from "remark-parse";
-import { unified } from "unified";
 import { type ModelRef, nextTick, ref, watch } from "vue";
 import MarkdownNodeFactory from "../Factory/MarkdownNodeFactory";
 import { isTextNodeState } from "../MarkdownComponentRegistry";
-import type MarkdownModuleImageState from "../Modules/MarkdownModuleImageState";
-import type MarkdownModuleListState from "../Modules/MarkdownModuleListState";
+import type MarkdownModuleFileState from "../Modules/MarkdownModuleFileState";
 import type { MarkdownAstNode } from "../Types/MarkdownAstNode";
 import MarkdownNodeType, { isTextNodeType } from "../Types/MarkdownAstNodeType";
+import { parseMarkdown } from "./parseMarkdown";
+import { serializeMarkdown } from "./serializeMarkdown";
 
 function useMarkdownProcessor(modelValue: ModelRef<string | undefined>) {
   const markdownNodes = ref<Array<MarkdownAstNode>>([]);
   const isInternalUpdate = ref(false);
 
-  compileMarkdown(modelValue.value ?? "");
+  markdownNodes.value = parseMarkdown(modelValue.value ?? "");
 
   watch(
     markdownNodes,
     () => {
       isInternalUpdate.value = true;
-      modelValue.value = serializeMarkdown();
+      modelValue.value = serializeMarkdown(markdownNodes.value);
       nextTick(() => {
         isInternalUpdate.value = false;
       });
@@ -29,97 +27,8 @@ function useMarkdownProcessor(modelValue: ModelRef<string | undefined>) {
 
   watch(modelValue, (newValue) => {
     if (isInternalUpdate.value) return;
-    markdownNodes.value = [];
-    compileMarkdown(newValue ?? "");
+    markdownNodes.value = parseMarkdown(newValue ?? "");
   });
-
-  function compileMarkdown(markdown: string) {
-    const processor = unified().use(remarkParse);
-    const tree = processor.parse(markdown);
-
-    for (const node of tree.children) {
-      if (node.type === "paragraph" && node.children[0]?.type === "text") {
-        const text = node.children[0].value ?? "";
-
-        // Custom Component Syntax here
-        // eslint-disable-next-line @stylistic/quotes
-        if (text.startsWith('"""') && text.endsWith('"""')) {
-          const moduleName = (text.split("\n")[0] ?? "").slice(3).trim();
-          if (moduleName === "MarkdownModuleImage") {
-            const srcMatch = text.match(/src:\s*(\S+)/);
-            const altMatch = text.match(/alt:\s*(.+)/);
-            const captionMatch = text.match(/caption:\s*(.+)/);
-
-            markdownNodes.value.push(
-              MarkdownNodeFactory.createImageNode(
-                srcMatch?.[1] ?? "",
-                altMatch?.[1] ?? "",
-                captionMatch?.[1] ?? "",
-              ),
-            );
-            continue;
-          }
-        }
-
-        // Regular text node
-
-        const phrasingContent = phrasingContentToText(node.children);
-
-        markdownNodes.value.push(MarkdownNodeFactory.createTextNode(MarkdownNodeType.PARAGRAPH, phrasingContent));
-      } else if (node.type === "heading" && node.depth === 1) {
-        const phrasingContent = phrasingContentToText(node.children);
-
-        markdownNodes.value.push(MarkdownNodeFactory.createTextNode(MarkdownNodeType.HEADLINE1, phrasingContent));
-      } else if (node.type === "heading" && node.depth === 2) {
-        markdownNodes.value.push(
-          MarkdownNodeFactory.createTextNode(MarkdownNodeType.HEADLINE2, phrasingContentToText(node.children)),
-        );
-      } else if (node.type === "heading" && node.depth === 3) {
-        markdownNodes.value.push(
-          MarkdownNodeFactory.createTextNode(MarkdownNodeType.HEADLINE3, phrasingContentToText(node.children)),
-        );
-      } else if (node.type === "list") {
-        const items = node.children.map((listItem) => {
-          const firstParagraph = listItem.children.find(c => c.type === "paragraph");
-          if (firstParagraph && firstParagraph.type === "paragraph") {
-            return phrasingContentToText(firstParagraph.children);
-          }
-          return "";
-        });
-        markdownNodes.value.push(MarkdownNodeFactory.createListNode(items));
-      }
-    }
-  }
-
-  function serializeMarkdown(): string {
-    return markdownNodes.value
-      .map((node) => {
-        if (isTextNodeType(node.type) && isTextNodeState(node)) {
-          const prefix = {
-            [MarkdownNodeType.PARAGRAPH]: "",
-            [MarkdownNodeType.LIST]: "",
-            [MarkdownNodeType.HEADLINE1]: "# ",
-            [MarkdownNodeType.HEADLINE2]: "## ",
-            [MarkdownNodeType.HEADLINE3]: "### ",
-          }[node.type];
-          return `${prefix}${node.componentState.text}`;
-        }
-        if (node.type === MarkdownNodeType.LIST) {
-          const listState = node.componentState as MarkdownModuleListState;
-          return listState.items.map(item => `- ${item.text}`).join("\n");
-        }
-        if (node.type === MarkdownNodeType.IMAGE) {
-          const imageState = node.componentState as MarkdownModuleImageState;
-          return `"""MarkdownModuleImage
-src: ${imageState.src}
-alt: ${imageState.alt}
-caption: ${imageState.caption}
-"""`;
-        }
-        return "";
-      })
-      .join("\n\n");
-  }
 
   function deleteNode(nodeIndex: number) {
     nextTick(() => {
@@ -139,6 +48,18 @@ caption: ${imageState.caption}
     return nodeIndex + 1;
   }
 
+  function addNodeWithType(nodeIndex: number, type: MarkdownNodeType, content: string = ""): number {
+    const newNode = createNodeWithType(content, type);
+
+    if (nodeIndex !== undefined) {
+      markdownNodes.value.splice(nodeIndex + 1, 0, newNode);
+    } else {
+      markdownNodes.value.push(newNode);
+    }
+
+    return nodeIndex + 1;
+  }
+
   function createNodeWithType(text: string, newType: MarkdownNodeType): MarkdownAstNode {
     if (newType === MarkdownNodeType.LIST) {
       return MarkdownNodeFactory.createListNode(text ? [text] : [""]);
@@ -147,7 +68,17 @@ caption: ${imageState.caption}
       return MarkdownNodeFactory.createTextNode(newType, text);
     }
     if (newType === MarkdownNodeType.IMAGE) {
-      return MarkdownNodeFactory.createImageNode("", "", "");
+      return MarkdownNodeFactory.createImageNode(text, "", "");
+    }
+    if (newType === MarkdownNodeType.FILE) {
+      const data = JSON.parse(text) as MarkdownModuleFileState;
+      return MarkdownNodeFactory.createFileNode(
+        data.url,
+        data.fileName,
+        data.fileSize,
+        data.mimeType,
+        data.uploadError,
+      );
     }
     throw new Error(`Unsupported node type: ${newType}`);
   }
@@ -179,27 +110,10 @@ caption: ${imageState.caption}
     markdownNodes,
     deleteNode,
     addBlankNode,
+    addNodeWithType,
     replaceNodeType,
     moveNode,
   };
 }
 
 export default useMarkdownProcessor;
-
-function phrasingContentToText(phrasingContent: PhrasingContent[]): string {
-  let result = "";
-
-  for (const content of phrasingContent) {
-    if (content.type === "text") {
-      result += content.value;
-    }
-    if (content.type === "strong") {
-      result += `**${phrasingContentToText(content.children)}**`;
-    }
-    if (content.type === "emphasis") {
-      result += `*${phrasingContentToText(content.children)}*`;
-    }
-  }
-
-  return result;
-}

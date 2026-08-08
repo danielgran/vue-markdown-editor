@@ -1,0 +1,36 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`MarkdownModuleFileRender > rendering > renders download card with file info 1`] = `
+<div
+  class="markdown-module-file-render"
+  data-v-ef28c0fc=""
+>
+  <span
+    class="markdown-module-file-render-icon"
+    data-v-ef28c0fc=""
+  >
+    📄
+  </span>
+  <div
+    class="markdown-module-file-render-info"
+    data-v-ef28c0fc=""
+  >
+    <a
+      class="markdown-module-file-render-name"
+      data-v-ef28c0fc=""
+      download="document.pdf"
+      href="https://example.com/document.pdf"
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      document.pdf
+    </a>
+    <span
+      class="markdown-module-file-render-size"
+      data-v-ef28c0fc=""
+    >
+      1.0 MB
+    </span>
+  </div>
+</div>
+`;

@@ -29,6 +29,7 @@
 </template>
 
 <script setup lang="ts">
+import { activeEditor } from "../Composable/activeEditorStore";
 import useTextSelectionMenu from "../Composable/useTextSelectionMenu";
 import MarkdownEditorContextMenu from "./MarkdownEditorContextMenu.vue";
 import MarkdownEditorContextMenuInlineItem from "./MarkdownEditorContextMenuInlineItem.vue";
@@ -36,9 +37,19 @@ import MarkdownEditorContextMenuInlineItem from "./MarkdownEditorContextMenuInli
 const { isVisible, anchorX, anchorY, activeStates, hide } = useTextSelectionMenu();
 
 function toggleFormat(command: "bold" | "italic" | "underline") {
-  // execCommand applies formatting to the active contenteditable selection.
-  // TipTap's onUpdate fires after the DOM change, keeping reactive state consistent.
-  document.execCommand(command);
+  const editor = activeEditor.value!;
+
+  // Save and restore the ProseMirror selection so the toggle command
+  // operates on the correct range even if the browser cleared it.
+  const { from, to } = editor.state.selection;
+
+  const commandMap: Record<string, () => boolean> = {
+    bold: () => editor.chain().setTextSelection({ from, to }).toggleBold().run(),
+    italic: () => editor.chain().setTextSelection({ from, to }).toggleItalic().run(),
+    underline: () => editor.chain().setTextSelection({ from, to }).toggleUnderline().run(),
+  };
+
+  commandMap[command]?.();
   hide();
 }
 </script>

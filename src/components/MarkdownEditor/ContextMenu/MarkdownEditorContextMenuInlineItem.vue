@@ -1,8 +1,10 @@
 <template>
+  <!-- @mousedown.prevent prevents focus loss (browser bubbling) -->
   <button
     type="button"
     class="markdown-editor-context-menu-inline-item"
     :class="{ 'is-active': active }"
+    @mousedown.prevent
     @click="$emit('click')"
   >
     <slot />

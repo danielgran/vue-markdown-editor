@@ -1,6 +1,8 @@
 <template>
   <Teleport to="body">
     <div
+      ref="rootEl"
+      v-bind="$attrs"
       class="markdown-editor-context-menu"
       :style="positionStyle"
     >
@@ -10,7 +12,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
+
+defineOptions({ inheritAttrs: false });
+
+const rootEl = ref<HTMLElement | null>(null);
+
+defineExpose({ rootEl });
 
 const props = defineProps<{
   x: number;

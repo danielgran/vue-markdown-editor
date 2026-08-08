@@ -1,0 +1,17 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`MarkdownEditorFileContextMenu > rendering > renders correctly with x and y position props 1`] = `
+<markdown-editor-context-menu-stub
+  data-v-434cbc64=""
+  x="50"
+  y="120"
+/>
+`;
+
+exports[`MarkdownEditorFileContextMenu > rendering > renders with zero position 1`] = `
+<markdown-editor-context-menu-stub
+  data-v-434cbc64=""
+  x="0"
+  y="0"
+/>
+`;

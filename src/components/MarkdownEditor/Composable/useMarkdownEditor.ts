@@ -4,7 +4,7 @@ import useMarkdownProcessor from "./useMarkdownProcessor";
 export function useMarkdownEditor(initialContent: string = "") {
   const markdownContent = ref<string>(initialContent);
 
-  const { markdownNodes, deleteNode, addBlankNode, replaceNodeType, moveNode } = useMarkdownProcessor(
+  const { markdownNodes, deleteNode, addBlankNode, addNodeWithType, replaceNodeType, moveNode } = useMarkdownProcessor(
     markdownContent as ModelRef<string | undefined>,
   );
 
@@ -13,6 +13,7 @@ export function useMarkdownEditor(initialContent: string = "") {
     markdownNodes,
     deleteNode,
     addBlankNode,
+    addNodeWithType,
     replaceNodeType,
     moveNode,
   };

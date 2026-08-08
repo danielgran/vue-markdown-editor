@@ -1,0 +1,48 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`MarkdownModuleFile > rendering > renders success state with download card 1`] = `
+<div
+  class="markdown-module-file"
+  data-v-09d2b7a1=""
+>
+  <!-- Success state: download card -->
+  <div
+    class="markdown-module-file-card"
+    data-v-09d2b7a1=""
+  >
+    <span
+      class="markdown-module-file-icon"
+      data-v-09d2b7a1=""
+    >
+      📄
+    </span>
+    <div
+      class="markdown-module-file-info"
+      data-v-09d2b7a1=""
+    >
+      <a
+        class="markdown-module-file-name"
+        data-v-09d2b7a1=""
+        download="document.pdf"
+        href="https://example.com/document.pdf"
+        rel="noopener noreferrer"
+        target="_blank"
+      >
+        document.pdf
+      </a>
+      <span
+        class="markdown-module-file-size"
+        data-v-09d2b7a1=""
+      >
+        1.0 MB
+      </span>
+    </div>
+  </div>
+  <!--v-if-->
+  <markdown-editor-modal-stub
+    data-v-09d2b7a1=""
+    show="false"
+    title="Edit File Attributes"
+  />
+</div>
+`;

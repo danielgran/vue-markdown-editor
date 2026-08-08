@@ -1,43 +1,64 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`MarkdownEditorContextMenuInlineItem > active state > renders with active class when active prop is true 1`] = `
-<button
-  class="markdown-editor-context-menu-inline-item is-active"
-  data-v-03956172=""
-  type="button"
+<div
+  data-v-app=""
 >
   
-  <strong>
-    B
-  </strong>
+  <!-- @mousedown.prevent prevents focus loss (browser bubbling) -->
+  <button
+    class="markdown-editor-context-menu-inline-item is-active"
+    data-v-03956172=""
+    type="button"
+  >
+    
+    <strong>
+      B
+    </strong>
+    
+  </button>
   
-</button>
+</div>
 `;
 
 exports[`MarkdownEditorContextMenuInlineItem > default slot > renders slot content inside the button 1`] = `
-<button
-  class="markdown-editor-context-menu-inline-item"
-  data-v-03956172=""
-  type="button"
+<div
+  data-v-app=""
 >
   
-  <em>
-    I
-  </em>
+  <!-- @mousedown.prevent prevents focus loss (browser bubbling) -->
+  <button
+    class="markdown-editor-context-menu-inline-item"
+    data-v-03956172=""
+    type="button"
+  >
+    
+    <em>
+      I
+    </em>
+    
+  </button>
   
-</button>
+</div>
 `;
 
 exports[`MarkdownEditorContextMenuInlineItem > inactive state > renders without active class when active prop is false 1`] = `
-<button
-  class="markdown-editor-context-menu-inline-item"
-  data-v-03956172=""
-  type="button"
+<div
+  data-v-app=""
 >
   
-  <strong>
-    B
-  </strong>
+  <!-- @mousedown.prevent prevents focus loss (browser bubbling) -->
+  <button
+    class="markdown-editor-context-menu-inline-item"
+    data-v-03956172=""
+    type="button"
+  >
+    
+    <strong>
+      B
+    </strong>
+    
+  </button>
   
-</button>
+</div>
 `;

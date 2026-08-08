@@ -7,6 +7,7 @@
 <script lang="ts" setup>
 import StarterKit from "@tiptap/starter-kit";
 import { EditorContent, useEditor } from "@tiptap/vue-3";
+import { activeEditor } from "../Composable/activeEditorStore";
 import { htmlToMarkdown, markdownToHtml } from "../Composable/useReflectiveState";
 import MarkdownModuleListState from "./MarkdownModuleListState";
 import MarkdownModuleTextState from "./MarkdownModuleTextState";
@@ -37,6 +38,9 @@ const editor = useEditor({
     }),
   ],
   content: itemsToHtml(modelValue.value.items),
+  onFocus: () => {
+    activeEditor.value = editor.value ?? null;
+  },
   onUpdate: ({ editor }) => {
     modelValue.value.items = htmlToItems(editor.getHTML());
   },
@@ -46,6 +50,7 @@ defineExpose({
   focus() {
     editor.value?.commands.focus();
   },
+  editor,
 });
 </script>
 

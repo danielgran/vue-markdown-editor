@@ -1,4 +1,5 @@
 import registry from "../MarkdownComponentRegistry";
+import type MarkdownModuleFileState from "../Modules/MarkdownModuleFileState";
 import type MarkdownModuleImageState from "../Modules/MarkdownModuleImageState";
 import type MarkdownModuleListState from "../Modules/MarkdownModuleListState";
 import MarkdownModuleTextState from "../Modules/MarkdownModuleTextState";
@@ -43,6 +44,22 @@ class MarkdownNodeFactory {
 
   createBlankParagraph(): MarkdownAstNode<MarkdownModuleTextState> {
     return this.createTextNode(MarkdownNodeType.PARAGRAPH, "");
+  }
+
+  createFileNode(
+    url: string,
+    fileName: string,
+    fileSize: number,
+    mimeType: string,
+    uploadError: string = "",
+  ): MarkdownAstNode<MarkdownModuleFileState> {
+    return this.createNode<MarkdownModuleFileState>(MarkdownNodeType.FILE, {
+      url,
+      fileName,
+      fileSize,
+      mimeType,
+      uploadError,
+    });
   }
 }
 
