@@ -1,12 +1,9 @@
 name: Publish Vue3 Package to npm
 
 on:
-  release:
-    types: [published]
   push:
     branches:
       - dev
-      - staging
       - main
 
 jobs:
@@ -14,7 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write  # Required for OIDC and Trusted Publishers
 
     steps:
       - name: Checkout
@@ -24,6 +20,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          registry-url: 'https://registry.npmjs.org'
           cache: 'npm'
 
       - name: Install dependencies
@@ -35,36 +32,17 @@ jobs:
       - name: Build package
         run: npm run build
 
-      # Map each branch to its npm dist-tag.
-      - name: Resolve npm dist-tag for this stage
-        id: stage
-        run: |
-          case "${GITHUB_REF_NAME}" in
-            staging) echo "tag=beta"    >> "$GITHUB_OUTPUT" ;;
-            dev)     echo "tag=dev"     >> "$GITHUB_OUTPUT" ;;
-            *)       echo "tag=latest"  >> "$GITHUB_OUTPUT" ;;
-          esac
-
-      # Publish prereleases from dev/staging branches
-      - name: Publish staged prerelease (dev/staging branches)
-        if: github.ref != 'refs/heads/main' && github.event_name == 'push'
+      - name: Publish to npm
         env:
-          TAG: ${{ steps.stage.outputs.tag }}
-          NODE_AUTH_TOKEN: 'oidc' # 👈 Tells npm to look at the OIDC GitHub handshake  
-
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
-          BASE_VERSION=$(node -p "require('./package.json').version")
-          PRERELEASE_VERSION="${BASE_VERSION}-${TAG}.${SHORT_SHA}"
-          echo "Publishing staged prerelease ${PRERELEASE_VERSION} under dist-tag '${TAG}'"
-          
-          npm version "${PRERELEASE_VERSION}" --no-git-tag-version
-          npm publish --provenance --access public --tag "${TAG}"
+          if [ "${GITHUB_REF_NAME}" = "main" ]; then
+            npm publish --access public
+          else
+            SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
+            BASE_VERSION=$(node -p "require('./package.json').version")
+            PRERELEASE_VERSION="${BASE_VERSION}-dev.${SHORT_SHA}"
+            npm version "${PRERELEASE_VERSION}" --no-git-tag-version
+            npm publish --access public --tag dev
+          fi
 
-      # main branch pushes and published GitHub Releases become the stable line.
-      - name: Publish stable (main push or GitHub release)
-        env:
-          NODE_AUTH_TOKEN: 'oidc' # 👈 Tells npm to look at the OIDC GitHub handshake
-
-        if: github.ref == 'refs/heads/main' || github.event_name == 'release'
-        run: npm publish --provenance --access public

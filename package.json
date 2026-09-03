@@ -41,10 +41,6 @@
     "url": "https://github.com/danielgran/vue-markdown-editor/issues"
   },
   "homepage": "https://github.com/danielgran/vue-markdown-editor#readme",
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
-  },
   "engines": {
     "node": ">=22"
   },
