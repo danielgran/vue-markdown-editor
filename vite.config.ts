@@ -1,10 +1,7 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { fileURLToPath, URL } from 'node:url';
-import { resolve, dirname } from 'node:path';
-import { createRequire } from 'node:module';
-
-const require = createRequire(import.meta.url);
+import { resolve } from 'node:path';
 
 export default defineConfig({
   plugins: [vue()],
@@ -14,17 +11,27 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      // Force the pure (Node-safe) decode build so the bundle has no top-level
+      // `document` access and can be imported during Nuxt SSR. The `browser`
+      // condition of this package selects index.dom.js, which calls
+      // document.createElement('i') at module top level and crashes SSR.
+      'decode-named-character-reference': resolve(
+        import.meta.dirname,
+        'node_modules',
+        'decode-named-character-reference',
+        'index.js',
+      ),
     },
   },
   build: {
     emptyOutDir: false,
     lib: {
-      formats: ["es"],
-      entry: resolve(import.meta.dirname, "src", "index.ts"),
-      fileName: "vue-markdown-editor",
+      formats: ['es'],
+      entry: resolve(import.meta.dirname, 'src', 'index.ts'),
+      fileName: 'vue-markdown-editor',
     },
     rollupOptions: {
-      external: ["vue"],
+      external: ['vue'],
     },
-    },
+  },
 });
