@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write  # Required for npm provenance
+      id-token: write  # Required for OIDC and Trusted Publishers
 
     steps:
       - name: Checkout
@@ -24,7 +24,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
@@ -49,7 +49,6 @@ jobs:
       - name: Publish staged prerelease (dev/staging branches)
         if: github.ref != 'refs/heads/main' && github.event_name == 'push'
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} # 👈 MUST provide the authentication token
           TAG: ${{ steps.stage.outputs.tag }}
         run: |
           SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
@@ -57,15 +56,10 @@ jobs:
           PRERELEASE_VERSION="${BASE_VERSION}-${TAG}.${SHORT_SHA}"
           echo "Publishing staged prerelease ${PRERELEASE_VERSION} under dist-tag '${TAG}'"
           
-          # Modifying version on the fly works with Trusted Publishers, 
-          # but if using standard tokens, it must match the git state.
           npm version "${PRERELEASE_VERSION}" --no-git-tag-version
           npm publish --provenance --access public --tag "${TAG}"
 
       # main branch pushes and published GitHub Releases become the stable line.
       - name: Publish stable (main push or GitHub release)
         if: github.ref == 'refs/heads/main' || github.event_name == 'release'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} # 👈 MUST provide the authentication token
-        # Added missing '--access public' flag below to prevent 404 on scoped packages
         run: npm publish --provenance --access public
