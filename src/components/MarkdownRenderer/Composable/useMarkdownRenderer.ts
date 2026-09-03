@@ -1,4 +1,4 @@
-import { markRaw, reactive, type Component } from "vue";
+import type { Component } from "vue";
 import type MarkdownModuleCodeBlockState from "../../MarkdownEditor/Modules/MarkdownModuleCodeBlockState";
 import type MarkdownModuleFileState from "../../MarkdownEditor/Modules/MarkdownModuleFileState";
 import type MarkdownModuleImageState from "../../MarkdownEditor/Modules/MarkdownModuleImageState";
@@ -33,7 +33,7 @@ export interface RenderStateMap {
 export type RenderComponent<TState extends object = object> = Component<{ state: TState }>;
 
 /**
- * Creates a reactive Markdown renderer instance that can be bound to `<MarkdownRenderer>`.
+ * Creates a Markdown renderer instance that can be bound to `<MarkdownRenderer>`.
  *
  * The returned instance allows overriding the default render components on a per-node-type
  * basis via `overrideComponent()`. Each override is strictly typed — the replacement
@@ -50,17 +50,13 @@ export type RenderComponent<TState extends object = object> = Component<{ state:
  * ```
  */
 export function useMarkdownRenderer() {
-  // Component definitions must never be wrapped in reactive proxies: Vue warns
-  // ("received a Component that was made a reactive object") and can fail to
-  // resolve them as dynamic components on the client. Mark every render component
-  // as raw so only the registry (node type -> component) itself is reactive.
-  const defaultComponents = Object.fromEntries(
-    Object.entries(defaultRenderComponentRegistry).map(([key, component]) => [key, markRaw(component)]),
-  ) as { [K in MarkdownNodeType]: RenderComponent<RenderStateMap[K]> };
-
-  const componentRegistry = reactive<{ [K in MarkdownNodeType]: RenderComponent<RenderStateMap[K]> }>(
-    defaultComponents,
-  );
+  // Component definitions must never be wrapped in reactive proxies — Vue warns
+  // ("received a Component that was made a reactive object") and can fail to resolve
+  // them as dynamic components. The registry is static configuration, so keep it a
+  // plain object and register overrides before the renderer is bound to <MarkdownRenderer>.
+  const componentRegistry: { [K in MarkdownNodeType]: RenderComponent<RenderStateMap[K]> } = {
+    ...defaultRenderComponentRegistry,
+  };
 
   /**
    * Override the render component for a specific node type.
@@ -78,7 +74,7 @@ export function useMarkdownRenderer() {
     // TypeScript can't prove assignability when indexing a mapped type with a generic K.
     // This is safe because the function signature already enforces the correct state type.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (componentRegistry as any)[type] = markRaw(component);
+    (componentRegistry as any)[type] = component;
   }
 
   return {
