@@ -65,4 +65,4 @@ jobs:
       # main branch pushes and published GitHub Releases become the stable line.
       - name: Publish stable (main push or GitHub release)
         if: github.ref == 'refs/heads/main' || github.event_name == 'release'
-        run: npm publish --provenance --access public
+        run: npm publish
