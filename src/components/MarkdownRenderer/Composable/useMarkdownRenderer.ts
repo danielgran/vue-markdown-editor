@@ -1,4 +1,4 @@
-import { type Component, reactive } from "vue";
+import { markRaw, reactive, type Component } from "vue";
 import type MarkdownModuleCodeBlockState from "../../MarkdownEditor/Modules/MarkdownModuleCodeBlockState";
 import type MarkdownModuleFileState from "../../MarkdownEditor/Modules/MarkdownModuleFileState";
 import type MarkdownModuleImageState from "../../MarkdownEditor/Modules/MarkdownModuleImageState";
@@ -50,9 +50,17 @@ export type RenderComponent<TState extends object = object> = Component<{ state:
  * ```
  */
 export function useMarkdownRenderer() {
-  const componentRegistry = reactive<{ [K in MarkdownNodeType]: RenderComponent<RenderStateMap[K]> }>({
-    ...defaultRenderComponentRegistry,
-  });
+  // Component definitions must never be wrapped in reactive proxies: Vue warns
+  // ("received a Component that was made a reactive object") and can fail to
+  // resolve them as dynamic components on the client. Mark every render component
+  // as raw so only the registry (node type -> component) itself is reactive.
+  const defaultComponents = Object.fromEntries(
+    Object.entries(defaultRenderComponentRegistry).map(([key, component]) => [key, markRaw(component)]),
+  ) as { [K in MarkdownNodeType]: RenderComponent<RenderStateMap[K]> };
+
+  const componentRegistry = reactive<{ [K in MarkdownNodeType]: RenderComponent<RenderStateMap[K]> }>(
+    defaultComponents,
+  );
 
   /**
    * Override the render component for a specific node type.
@@ -70,7 +78,7 @@ export function useMarkdownRenderer() {
     // TypeScript can't prove assignability when indexing a mapped type with a generic K.
     // This is safe because the function signature already enforces the correct state type.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (componentRegistry as any)[type] = component;
+    (componentRegistry as any)[type] = markRaw(component);
   }
 
   return {
