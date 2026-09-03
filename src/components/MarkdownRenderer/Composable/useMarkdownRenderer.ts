@@ -1,7 +1,9 @@
 import { type Component, reactive } from "vue";
+import type MarkdownModuleCodeBlockState from "../../MarkdownEditor/Modules/MarkdownModuleCodeBlockState";
 import type MarkdownModuleFileState from "../../MarkdownEditor/Modules/MarkdownModuleFileState";
 import type MarkdownModuleImageState from "../../MarkdownEditor/Modules/MarkdownModuleImageState";
 import type MarkdownModuleListState from "../../MarkdownEditor/Modules/MarkdownModuleListState";
+import type MarkdownModuleTableState from "../../MarkdownEditor/Modules/MarkdownModuleTableState";
 import type MarkdownModuleTextState from "../../MarkdownEditor/Modules/MarkdownModuleTextState";
 import MarkdownNodeType from "../../MarkdownEditor/Types/MarkdownAstNodeType";
 import defaultRenderComponentRegistry from "../defaultRenderComponentRegistry";
@@ -16,6 +18,11 @@ export interface RenderStateMap {
   [MarkdownNodeType.HEADLINE2]: MarkdownModuleTextState;
   [MarkdownNodeType.HEADLINE3]: MarkdownModuleTextState;
   [MarkdownNodeType.LIST]: MarkdownModuleListState;
+  [MarkdownNodeType.ORDERED_LIST]: MarkdownModuleListState;
+  [MarkdownNodeType.BLOCKQUOTE]: MarkdownModuleTextState;
+  [MarkdownNodeType.CODE_BLOCK]: MarkdownModuleCodeBlockState;
+  [MarkdownNodeType.HR]: Record<string, never>;
+  [MarkdownNodeType.TABLE]: MarkdownModuleTableState;
   [MarkdownNodeType.IMAGE]: MarkdownModuleImageState;
   [MarkdownNodeType.FILE]: MarkdownModuleFileState;
 }

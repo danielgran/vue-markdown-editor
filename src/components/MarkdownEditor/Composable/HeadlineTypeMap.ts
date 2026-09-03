@@ -24,12 +24,52 @@ export const HEADLINE_TYPE_MAP: HeadlineTypeEntry[] = [
   },
 ];
 
-export function detectHeadlineTypeFromContent(content: string, cursorPosition: number): MarkdownNodeType | null {
-  const matchedEntry = HEADLINE_TYPE_MAP.find(entry => content.startsWith(entry.prefix));
-  if (!matchedEntry) return null;
+/**
+ * Block types converted from a leading prefix that do not use the headline
+ * cursor heuristic. Typing these prefixes at the start of a paragraph converts
+ * the block (e.g. `> ` → blockquote, `1. ` → ordered list).
+ */
+const NON_HEADING_BLOCK_MAP: HeadlineTypeEntry[] = [
+  {
+    prefix: ">",
+    type: MarkdownNodeType.BLOCKQUOTE,
+    depth: 0,
+  },
+  {
+    prefix: "1.",
+    type: MarkdownNodeType.ORDERED_LIST,
+    depth: 0,
+  },
+  {
+    prefix: "```",
+    type: MarkdownNodeType.CODE_BLOCK,
+    depth: 0,
+  },
+  {
+    prefix: "---",
+    type: MarkdownNodeType.HR,
+    depth: 0,
+  },
+];
 
-  if (matchedEntry.prefix.length + 2 === cursorPosition) {
-    return matchedEntry.type;
+export function detectHeadlineTypeFromContent(content: string, cursorPosition: number): MarkdownNodeType | null {
+  // Headings use the exact cursor heuristic so a paragraph only converts the
+  // moment the trigger is typed (e.g. `# ` with cursor right after the space).
+  for (const entry of HEADLINE_TYPE_MAP) {
+    if (content.startsWith(entry.prefix)) {
+      if (entry.prefix.length + 2 === cursorPosition) {
+        return entry.type;
+      }
+      return null;
+    }
+  }
+
+  // Non-heading block types convert as soon as their prefix appears at the start.
+  const trimmed = content.trim();
+  for (const entry of NON_HEADING_BLOCK_MAP) {
+    if (trimmed.startsWith(entry.prefix)) {
+      return entry.type;
+    }
   }
 
   return null;

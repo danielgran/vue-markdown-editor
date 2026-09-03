@@ -6,25 +6,34 @@ import MarkdownModuleTextState from "../../Modules/MarkdownModuleTextState";
 import MarkdownModuleImageState from "../../Modules/MarkdownModuleImageState";
 import MarkdownModuleListState from "../../Modules/MarkdownModuleListState";
 import MarkdownModuleFileState from "../../Modules/MarkdownModuleFileState";
+import MarkdownModuleCodeBlockState from "../../Modules/MarkdownModuleCodeBlockState";
+import MarkdownModuleTableState from "../../Modules/MarkdownModuleTableState";
 
 // --- Hoist mock functions so they are available when vi.mock factory runs ---
-const { mockCreateTextNode, mockCreateImageNode, mockCreateBlankParagraph, mockCreateListNode, mockCreateFileNode, mockUnifiedParse } = vi.hoisted(() => ({
+const { mockCreateTextNode, mockCreateImageNode, mockCreateBlankParagraph, mockCreateListNode, mockCreateOrderedListNode, mockCreateBlockquoteNode, mockCreateCodeBlockNode, mockCreateHrNode, mockCreateTableNode, mockCreateFileNode, mockUnifiedParse } = vi.hoisted(() => ({
   mockCreateTextNode: vi.fn(),
   mockCreateImageNode: vi.fn(),
   mockCreateBlankParagraph: vi.fn(),
   mockCreateListNode: vi.fn(),
+  mockCreateOrderedListNode: vi.fn(),
+  mockCreateBlockquoteNode: vi.fn(),
+  mockCreateCodeBlockNode: vi.fn(),
+  mockCreateHrNode: vi.fn(),
+  mockCreateTableNode: vi.fn(),
   mockCreateFileNode: vi.fn(),
   mockUnifiedParse: vi.fn(),
 }));
 
 // --- Mock unified (second-layer dep) — defaults to real parser ---
-vi.mock("unified", () => ({
-  unified: () => ({
-    use: () => ({
-      parse: mockUnifiedParse,
-    }),
-  }),
-}));
+vi.mock("unified", () => {
+  const mockProcessor = {
+    use: () => mockProcessor,
+    parse: mockUnifiedParse,
+  };
+  return {
+    unified: () => mockProcessor,
+  };
+});
 
 // --- Mock MarkdownNodeFactory (second-layer dep) ---
 vi.mock("../../Factory/MarkdownNodeFactory", () => ({
@@ -33,6 +42,11 @@ vi.mock("../../Factory/MarkdownNodeFactory", () => ({
     createImageNode: mockCreateImageNode,
     createBlankParagraph: mockCreateBlankParagraph,
     createListNode: mockCreateListNode,
+    createOrderedListNode: mockCreateOrderedListNode,
+    createBlockquoteNode: mockCreateBlockquoteNode,
+    createCodeBlockNode: mockCreateCodeBlockNode,
+    createHrNode: mockCreateHrNode,
+    createTableNode: mockCreateTableNode,
     createFileNode: mockCreateFileNode,
   },
 }));
@@ -48,12 +62,26 @@ const makeFakeImageNode = (src: string, alt: string, caption: string): MarkdownA
     editingState: { cursorPosition: 0 },
   });
 
-const makeFakeListNode = (items: string[]): MarkdownAstNode<MarkdownModuleListState> =>
+const makeFakeListNode = (items: string[], type: MarkdownNodeType = MarkdownNodeType.LIST): MarkdownAstNode<MarkdownModuleListState> =>
   new MarkdownAstNode({
-    type: MarkdownNodeType.LIST,
+    type,
     componentState: new MarkdownModuleListState({
       items: items.map(text => new MarkdownModuleTextState({ text })),
     }),
+    editingState: { cursorPosition: 0 },
+  });
+
+const makeFakeCodeBlockNode = (code: string, language: string): MarkdownAstNode<MarkdownModuleCodeBlockState> =>
+  new MarkdownAstNode({
+    type: MarkdownNodeType.CODE_BLOCK,
+    componentState: new MarkdownModuleCodeBlockState({ code, language }),
+    editingState: { cursorPosition: 0 },
+  });
+
+const makeFakeTableNode = (headers: string[], rows: string[][]): MarkdownAstNode<MarkdownModuleTableState> =>
+  new MarkdownAstNode({
+    type: MarkdownNodeType.TABLE,
+    componentState: new MarkdownModuleTableState({ headers, rows }),
     editingState: { cursorPosition: 0 },
   });
 
@@ -71,11 +99,15 @@ describe("useMarkdownProcessor", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
 
-    // Default: unified mock passes through to the real remark-parse parser
+    // Default: unified mock passes through to the real remark-parse + remark-gfm
+    // parser — matching the real pipeline used by parseMarkdown (remark-gfm adds
+    // GFM tables and auto-links bare URLs, which the parser must handle).
     const actualUnified = await vi.importActual<any>("unified");
     const actualRemarkParse = await vi.importActual<any>("remark-parse");
+    const actualRemarkGfm = await vi.importActual<any>("remark-gfm");
+    const remarkGfmPlugin = actualRemarkGfm.default ?? actualRemarkGfm;
     mockUnifiedParse.mockImplementation((input: string) => {
-      return actualUnified.unified().use(actualRemarkParse.default).parse(input);
+      return actualUnified.unified().use(actualRemarkParse.default).use(remarkGfmPlugin).parse(input);
     });
 
     mockCreateTextNode.mockImplementation((type: MarkdownNodeType, text: string) => makeFakeTextNode(type, text));
@@ -84,6 +116,23 @@ describe("useMarkdownProcessor", () => {
     );
     mockCreateBlankParagraph.mockImplementation(() => makeFakeTextNode(MarkdownNodeType.PARAGRAPH, ""));
     mockCreateListNode.mockImplementation((items: string[]) => makeFakeListNode(items));
+    mockCreateOrderedListNode.mockImplementation((items: string[]) =>
+      makeFakeListNode(items, MarkdownNodeType.ORDERED_LIST),
+    );
+    mockCreateBlockquoteNode.mockImplementation((text: string) => makeFakeTextNode(MarkdownNodeType.BLOCKQUOTE, text));
+    mockCreateCodeBlockNode.mockImplementation((code: string, language: string) =>
+      makeFakeCodeBlockNode(code, language),
+    );
+    mockCreateHrNode.mockImplementation(() =>
+      new MarkdownAstNode({
+        type: MarkdownNodeType.HR,
+        componentState: {},
+        editingState: { cursorPosition: 0 },
+      }),
+    );
+    mockCreateTableNode.mockImplementation((headers: string[], rows: string[][]) =>
+      makeFakeTableNode(headers, rows),
+    );
     mockCreateFileNode.mockImplementation((url: string, fileName: string, fileSize: number, mimeType: string, uploadError = "") =>
       makeFakeFileNode(url, fileName, fileSize, mimeType, uploadError),
     );
@@ -193,6 +242,73 @@ describe("useMarkdownProcessor", () => {
 
       // Assert
       expect(markdownNodes.value).toHaveLength(0);
+    });
+  });
+
+  describe("compileMarkdown — new module parsing", () => {
+    it("parses a blockquote into a BLOCKQUOTE node", () => {
+      // Arrange
+      const model = makeModel("> A great quote");
+
+      // Act
+      const { markdownNodes } = useMarkdownProcessor(model);
+
+      // Assert
+      expect(markdownNodes.value).toHaveLength(1);
+      expect(markdownNodes.value[0]?.type).toBe(MarkdownNodeType.BLOCKQUOTE);
+      expect(mockCreateBlockquoteNode).toHaveBeenCalledWith("A great quote");
+    });
+
+    it("parses a fenced code block into a CODE_BLOCK node", () => {
+      // Arrange
+      const model = makeModel("```ts\nconst x = 1;\n```");
+
+      // Act
+      const { markdownNodes } = useMarkdownProcessor(model);
+
+      // Assert
+      expect(markdownNodes.value).toHaveLength(1);
+      expect(markdownNodes.value[0]?.type).toBe(MarkdownNodeType.CODE_BLOCK);
+      expect(mockCreateCodeBlockNode).toHaveBeenCalledWith("const x = 1;", "ts");
+    });
+
+    it("parses a thematic break into an HR node", () => {
+      // Arrange
+      const model = makeModel("---");
+
+      // Act
+      const { markdownNodes } = useMarkdownProcessor(model);
+
+      // Assert
+      expect(markdownNodes.value).toHaveLength(1);
+      expect(markdownNodes.value[0]?.type).toBe(MarkdownNodeType.HR);
+      expect(mockCreateHrNode).toHaveBeenCalled();
+    });
+
+    it("parses an ordered list into an ORDERED_LIST node", () => {
+      // Arrange
+      const model = makeModel("1. First\n2. Second");
+
+      // Act
+      const { markdownNodes } = useMarkdownProcessor(model);
+
+      // Assert
+      expect(markdownNodes.value).toHaveLength(1);
+      expect(markdownNodes.value[0]?.type).toBe(MarkdownNodeType.ORDERED_LIST);
+      expect(mockCreateOrderedListNode).toHaveBeenCalledWith(["First", "Second"]);
+    });
+
+    it("parses a GFM table into a TABLE node", () => {
+      // Arrange
+      const model = makeModel("| Name | Role |\n| --- | --- |\n| Alice | Admin |");
+
+      // Act
+      const { markdownNodes } = useMarkdownProcessor(model);
+
+      // Assert
+      expect(markdownNodes.value).toHaveLength(1);
+      expect(markdownNodes.value[0]?.type).toBe(MarkdownNodeType.TABLE);
+      expect(mockCreateTableNode).toHaveBeenCalledWith(["Name", "Role"], [["Alice", "Admin"]]);
     });
   });
 
@@ -594,6 +710,83 @@ describe("useMarkdownProcessor", () => {
 
       // Assert
       expect(model.value).toBe('"""MarkdownModuleImage\nsrc: https://x.com/new.png\nalt: Alt\ncaption: Capt\n"""');
+    });
+  });
+
+  describe("serializeMarkdown — new modules", () => {
+    it("serializes a BLOCKQUOTE node by prefixing every line with '> '", async () => {
+      // Arrange
+      const model = makeModel("> Old quote");
+      const { markdownNodes } = useMarkdownProcessor(model);
+
+      // Act — mutate the quote text to trigger serialization
+      const node = markdownNodes.value[0] as MarkdownAstNode<MarkdownModuleTextState>;
+      node.componentState.text = "New quote\ncontinued";
+      await nextTick();
+      await nextTick();
+
+      // Assert
+      expect(model.value).toBe("> New quote\n> continued");
+    });
+
+    it("serializes a CODE_BLOCK node with a fenced code block and language", async () => {
+      // Arrange
+      const model = makeModel("```ts\nconst x = 1;\n```");
+      const { markdownNodes } = useMarkdownProcessor(model);
+
+      // Act — mutate the code to trigger serialization
+      const node = markdownNodes.value[0] as MarkdownAstNode<MarkdownModuleCodeBlockState>;
+      node.componentState.code = "const y = 2;";
+      await nextTick();
+      await nextTick();
+
+      // Assert
+      expect(model.value).toBe("```ts\nconst y = 2;\n```");
+    });
+
+    it("serializes an HR node to '---'", async () => {
+      // Arrange — an HR between two paragraphs
+      const model = makeModel("Intro\n\n---\n\nOutro");
+      const { markdownNodes } = useMarkdownProcessor(model);
+
+      // Act — mutate the first paragraph to trigger serialization
+      const node = markdownNodes.value[0] as MarkdownAstNode<MarkdownModuleTextState>;
+      node.componentState.text = "Intro!";
+      await nextTick();
+      await nextTick();
+
+      // Assert
+      expect(model.value).toBe("Intro!\n\n---\n\nOutro");
+    });
+
+    it("serializes an ORDERED_LIST node with numbered items", async () => {
+      // Arrange
+      const model = makeModel("1. a\n2. b");
+      const { markdownNodes } = useMarkdownProcessor(model);
+
+      // Act — mutate the first item to trigger serialization
+      const listNode = markdownNodes.value[0] as MarkdownAstNode<MarkdownModuleListState>;
+      listNode.componentState.items[0]!.text = "x";
+      await nextTick();
+      await nextTick();
+
+      // Assert
+      expect(model.value).toBe("1. x\n2. b");
+    });
+
+    it("serializes a TABLE node as a GFM pipe table", async () => {
+      // Arrange
+      const model = makeModel("| Name | Role |\n| --- | --- |\n| Alice | Admin |");
+      const { markdownNodes } = useMarkdownProcessor(model);
+
+      // Act — mutate a cell to trigger serialization
+      const tableNode = markdownNodes.value[0] as MarkdownAstNode<MarkdownModuleTableState>;
+      tableNode.componentState.rows[0]![0] = "Bob";
+      await nextTick();
+      await nextTick();
+
+      // Assert
+      expect(model.value).toBe("| Name | Role |\n| --- | --- |\n| Bob | Admin |");
     });
   });
 

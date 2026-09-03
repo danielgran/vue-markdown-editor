@@ -64,8 +64,20 @@ function useMarkdownProcessor(modelValue: ModelRef<string | undefined>) {
     if (newType === MarkdownNodeType.LIST) {
       return MarkdownNodeFactory.createListNode(text ? [text] : [""]);
     }
+    if (newType === MarkdownNodeType.ORDERED_LIST) {
+      return MarkdownNodeFactory.createOrderedListNode(text ? [text] : [""]);
+    }
     if (isTextNodeType(newType)) {
       return MarkdownNodeFactory.createTextNode(newType, text);
+    }
+    if (newType === MarkdownNodeType.CODE_BLOCK) {
+      return MarkdownNodeFactory.createCodeBlockNode(text, "");
+    }
+    if (newType === MarkdownNodeType.HR) {
+      return MarkdownNodeFactory.createHrNode();
+    }
+    if (newType === MarkdownNodeType.TABLE) {
+      return MarkdownNodeFactory.createTableNode(["", ""], [["", ""]]);
     }
     if (newType === MarkdownNodeType.IMAGE) {
       return MarkdownNodeFactory.createImageNode(text, "", "");
