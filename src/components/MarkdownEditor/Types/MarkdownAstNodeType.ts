@@ -6,6 +6,11 @@ enum MarkdownNodeType {
   IMAGE,
   LIST,
   FILE,
+  BLOCKQUOTE,
+  CODE_BLOCK,
+  HR,
+  TABLE,
+  ORDERED_LIST,
 }
 
 export type TextishNodeType
@@ -13,7 +18,9 @@ export type TextishNodeType
     | MarkdownNodeType.LIST
     | MarkdownNodeType.HEADLINE1
     | MarkdownNodeType.HEADLINE2
-    | MarkdownNodeType.HEADLINE3;
+    | MarkdownNodeType.HEADLINE3
+    | MarkdownNodeType.BLOCKQUOTE
+    | MarkdownNodeType.ORDERED_LIST;
 
 export function isTextNodeType(type: MarkdownNodeType): type is TextishNodeType {
   return (
@@ -22,6 +29,8 @@ export function isTextNodeType(type: MarkdownNodeType): type is TextishNodeType 
     || type === MarkdownNodeType.HEADLINE1
     || type === MarkdownNodeType.HEADLINE2
     || type === MarkdownNodeType.HEADLINE3
+    || type === MarkdownNodeType.BLOCKQUOTE
+    || type === MarkdownNodeType.ORDERED_LIST
   );
 }
 

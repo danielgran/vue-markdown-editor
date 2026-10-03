@@ -1,7 +1,9 @@
-import { type Component, reactive } from "vue";
+import type { Component } from "vue";
+import type MarkdownModuleCodeBlockState from "../../MarkdownEditor/Modules/MarkdownModuleCodeBlockState";
 import type MarkdownModuleFileState from "../../MarkdownEditor/Modules/MarkdownModuleFileState";
 import type MarkdownModuleImageState from "../../MarkdownEditor/Modules/MarkdownModuleImageState";
 import type MarkdownModuleListState from "../../MarkdownEditor/Modules/MarkdownModuleListState";
+import type MarkdownModuleTableState from "../../MarkdownEditor/Modules/MarkdownModuleTableState";
 import type MarkdownModuleTextState from "../../MarkdownEditor/Modules/MarkdownModuleTextState";
 import MarkdownNodeType from "../../MarkdownEditor/Types/MarkdownAstNodeType";
 import defaultRenderComponentRegistry from "../defaultRenderComponentRegistry";
@@ -16,6 +18,11 @@ export interface RenderStateMap {
   [MarkdownNodeType.HEADLINE2]: MarkdownModuleTextState;
   [MarkdownNodeType.HEADLINE3]: MarkdownModuleTextState;
   [MarkdownNodeType.LIST]: MarkdownModuleListState;
+  [MarkdownNodeType.ORDERED_LIST]: MarkdownModuleListState;
+  [MarkdownNodeType.BLOCKQUOTE]: MarkdownModuleTextState;
+  [MarkdownNodeType.CODE_BLOCK]: MarkdownModuleCodeBlockState;
+  [MarkdownNodeType.HR]: Record<string, never>;
+  [MarkdownNodeType.TABLE]: MarkdownModuleTableState;
   [MarkdownNodeType.IMAGE]: MarkdownModuleImageState;
   [MarkdownNodeType.FILE]: MarkdownModuleFileState;
 }
@@ -26,7 +33,7 @@ export interface RenderStateMap {
 export type RenderComponent<TState extends object = object> = Component<{ state: TState }>;
 
 /**
- * Creates a reactive Markdown renderer instance that can be bound to `<MarkdownRenderer>`.
+ * Creates a Markdown renderer instance that can be bound to `<MarkdownRenderer>`.
  *
  * The returned instance allows overriding the default render components on a per-node-type
  * basis via `overrideComponent()`. Each override is strictly typed — the replacement
@@ -43,9 +50,13 @@ export type RenderComponent<TState extends object = object> = Component<{ state:
  * ```
  */
 export function useMarkdownRenderer() {
-  const componentRegistry = reactive<{ [K in MarkdownNodeType]: RenderComponent<RenderStateMap[K]> }>({
+  // Component definitions must never be wrapped in reactive proxies — Vue warns
+  // ("received a Component that was made a reactive object") and can fail to resolve
+  // them as dynamic components. The registry is static configuration, so keep it a
+  // plain object and register overrides before the renderer is bound to <MarkdownRenderer>.
+  const componentRegistry: { [K in MarkdownNodeType]: RenderComponent<RenderStateMap[K]> } = {
     ...defaultRenderComponentRegistry,
-  });
+  };
 
   /**
    * Override the render component for a specific node type.

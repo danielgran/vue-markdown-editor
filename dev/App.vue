@@ -59,15 +59,19 @@ import { useMarkdownEditor } from "@/components/MarkdownEditor/Composable/useMar
 const activeTab = ref<"raw" | "preview">("raw");
 const copySuccess = ref(false);
 
+// Markdown code fence — kept in a variable so the triple backticks can be
+// interpolated inside the demo template literal below.
+const fence = "```";
+
 const editor = useMarkdownEditor(`# Welcome to vue-markdown-editor
 
 ## What is this?
 
-A block-based, node-editable Markdown editor built for Vue 3 with TipTap. Each part of your markdown is a separate, draggable block.
+A block-based, node-editable Markdown editor built for Vue 3 with TipTap. Each part of your markdown is a separate, draggable block — headlines, paragraphs, lists, tables, quotes, code, images, files and more.
 
 ### Key Features
 
-Each block type has its own editor — headlines use single-line heading inputs, paragraphs use rich text with a placeholder, and lists are fully interactive.
+Each block type has its own editor — headlines use single-line heading inputs, paragraphs use rich text with a placeholder, lists are fully interactive, tables edit cell-by-cell, code blocks keep a monospace editing surface and blockquotes render as styled quotes.
 
 - Drag any block by its handle (⠿) to reorder
 - Use the + button to insert a new block below
@@ -75,35 +79,97 @@ Each block type has its own editor — headlines use single-line heading inputs,
 - Change block type via the context menu (right-click or click the block's context menu trigger)
 - Select text to see the inline formatting toolbar (Bold, Italic, Underline)
 - Images support editing src, alt, and caption via a modal
+- Paste an image or a file to upload it as a block
+- Type a leading prefix to convert a paragraph: # / ## / ###, >, 1., ${fence} or ---
 
-### Images
+## Lists
+
+Each list item supports rich text. Press Enter inside a list to add an item, and Backspace on an empty item to remove it.
+
+### Unordered lists
+
+- Drag any block by its handle
+- Press Enter inside an item to add another
+- Backspace on an empty item removes it
+
+### Ordered lists
+
+1. Open the editor
+2. Type a numbered list or paste Markdown
+3. Reorder items with the drag handle
+
+## Blockquotes
+
+> Blockquotes are great for quotes and callouts.
+> Every exported line is prefixed with "> ".
+
+## Code Blocks
+
+Fenced code blocks keep a dedicated monospace editing surface:
+
+${fence}ts
+interface Server {
+  name: string;
+  port: number;
+}
+
+const server: Server = { name: "Survival", port: 25565 };
+${fence}
+
+## Tables
+
+Tables are edited cell-by-cell — type directly into any header or cell and the Markdown table is regenerated automatically:
+
+| Module | Type | Description |
+| --- | --- | --- |
+| Table | MarkdownModuleTable | Editable grid of header and body cells |
+| Code block | MarkdownModuleCodeBlock | Fenced code with an optional language |
+| Blockquote | MarkdownModuleBlockquote | Quoted text, one "> " prefix per line |
+| Divider | MarkdownModuleHr | Horizontal rule (---) |
+
+## Dividers (HR)
+
+A horizontal rule (---) visually separates sections:
+
+Before the divider.
+
+---
+
+After the divider.
+
+## Images
+
+Images are first-class blocks. Click an image (or right-click) to open the edit modal and change its src, alt text and caption:
 
 """MarkdownModuleImage
-src: https://via.placeholder.com/600x200/3b82f6/ffffff
+src: https://placehold.co/600x200/3b82f6/ffffff
 alt: A blue placeholder banner
 caption: Example image with caption
 """
 
-### Getting Started
+## Files
 
-Simply install the package and start editing. The editor serializes back to clean markdown automatically.
+File blocks render as attachments with a download link and a formatted file size:
+
+"""MarkdownModuleFile
+url: https://example.com/files/readme.pdf
+fileName: readme.pdf
+fileSize: 24576
+mimeType: application/pdf
+"""
 
 ## Advanced Usage
 
 ### Custom Components
 
-Images are rendered as custom blocks with their own context menu and editing modal — right-click an image to see options.
+Images are rendered as custom blocks with their own context menu and editing modal — right-click an image to see options. Every module's render component can be overridden through useMarkdownRenderer().
 
 ### Keyboard Shortcuts
 
 - Arrow Up / Down to move focus between blocks
 - Enter to split a block and create a new one below
 - Backspace on an empty block removes it
-- Delete on an empty block removes it (focus stays at same index)
-
-### Lists
-
-Lists support multiple items with rich text inside each item. Add items by pressing Enter within the list editor.`);
+- Delete on an empty block removes it (focus stays at same index)`);
 
 async function handleUploadImage(file: File): Promise<string> {
   // Simulate an image upload and return a URL

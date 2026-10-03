@@ -283,8 +283,6 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .markdown-editor {
-  padding-left: 6rem;
-
   :deep(p) {
     margin: 0.5rem 0;
   }
