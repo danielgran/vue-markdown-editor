@@ -66,7 +66,6 @@ import { ref } from "vue";
 import MarkdownEditorImageContextMenu from "../ContextMenu/MarkdownEditorImageContextMenu.vue";
 import MarkdownEditorModal from "../MarkdownEditorModal.vue";
 import type MarkdownModuleImageState from "./MarkdownModuleImageState";
-import { onClickOutside } from '@vueuse/core'
 
 const divRef = ref<HTMLDivElement>();
 
@@ -77,8 +76,6 @@ const modelValue = defineModel<MarkdownModuleImageState>({
 // Context menu state
 const showContextMenu = ref(false);
 const contextMenuPosition = ref({ x: 0, y: 0 });
-
-
 
 // Modal state
 const showModal = ref(false);

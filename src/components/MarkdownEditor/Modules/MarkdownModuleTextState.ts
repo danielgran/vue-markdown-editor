@@ -5,4 +5,3 @@ export default class MarkdownModuleTextState {
     Object.assign(this, object);
   }
 }
-

@@ -1,10 +1,12 @@
 import type { EditorContent, EditorEvents } from "@tiptap/vue-3";
 import { marked } from "marked";
 import TurndownService from "turndown";
-import { nextTick, ref, type ModelRef, type Ref } from "vue";
+import {
+  nextTick, ref, type ModelRef, type Ref,
+} from "vue";
 import type MarkdownModuleTextState from "../Modules/MarkdownModuleTextState";
 import type { TextishEmitFunction } from "../Types/TextishEmits";
-import { detectHeadlineTypeFromContent } from "./HeadlineTypeMap";
+import { detectBlockTypeFromContent } from "./HeadlineTypeMap";
 
 const turndownService = new TurndownService();
 // Override the default escape function to prevent escaping of special characters,
@@ -49,10 +51,13 @@ export default function useReflectiveState<T extends MarkdownModuleTextState>(op
   }
 
   function detectInlineTypeChange(markdown: string, cursorPosition: number) {
-    const detectedType = detectHeadlineTypeFromContent(markdown, cursorPosition);
-    if (!detectedType) return;
+    const detected = detectBlockTypeFromContent(markdown, cursorPosition);
+    if (!detected) return;
 
-    options.emit("change-type", detectedType);
+    // Drop the trigger prefix so the converted block starts empty instead of
+    // containing it (e.g. typing "- " creates an empty bullet, not one holding "-").
+    options.modelRef.value.text = markdown.slice(detected.matchedPrefix.length).trimStart();
+    options.emit("change-type", detected.type);
   }
 
   function handleKeyDown(event: KeyboardEvent) {

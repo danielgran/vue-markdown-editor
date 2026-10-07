@@ -1,4 +1,6 @@
-import { describe, expect, it } from "vitest";
+import {
+  describe, expect, it,
+} from "vitest";
 import { useMarkdownRenderer } from "../useMarkdownRenderer";
 import defaultRenderComponentRegistry from "../../defaultRenderComponentRegistry";
 import MarkdownNodeType from "../../../MarkdownEditor/Types/MarkdownAstNodeType";
@@ -37,6 +39,7 @@ describe("useMarkdownRenderer", () => {
 
     overrideComponent(MarkdownNodeType.PARAGRAPH, replacement);
 
+    expect(componentRegistry[MarkdownNodeType.PARAGRAPH]).not.toBe(original);
     expect(componentRegistry[MarkdownNodeType.PARAGRAPH]).toBe(replacement);
   });
 });

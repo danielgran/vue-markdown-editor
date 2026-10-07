@@ -1,4 +1,6 @@
-import { describe, expect, it } from "vitest";
+import {
+  describe, expect, it,
+} from "vitest";
 import MarkdownModuleFileState from "../MarkdownModuleFileState";
 
 describe("MarkdownModuleFileState", () => {

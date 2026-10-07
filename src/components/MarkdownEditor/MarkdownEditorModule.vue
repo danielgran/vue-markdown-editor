@@ -31,7 +31,9 @@
 
 <script lang="ts" setup>
 import { useFocusWithin } from "@vueuse/core";
-import { onMounted, ref, useTemplateRef, watch, type PropType } from "vue";
+import {
+  onMounted, ref, useTemplateRef, watch, type PropType,
+} from "vue";
 import type { MarkdownAstNode } from "./Types/MarkdownAstNode";
 
 import ComponentRegistry from "./MarkdownComponentRegistry";

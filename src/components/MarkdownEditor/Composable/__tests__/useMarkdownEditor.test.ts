@@ -1,7 +1,8 @@
 import { ref } from "vue";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  beforeEach, describe, expect, it, vi,
+} from "vitest";
 import type { MarkdownAstNode } from "../../Types/MarkdownAstNode";
-import MarkdownNodeType from "../../Types/MarkdownAstNodeType";
 
 // --- Mock useMarkdownProcessor (second-layer dep) ---
 const mockDeleteNode = vi.fn();

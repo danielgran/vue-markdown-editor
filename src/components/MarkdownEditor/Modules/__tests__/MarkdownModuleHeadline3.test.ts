@@ -1,5 +1,7 @@
 import { shallowMount } from "@vue/test-utils";
-import { describe, expect, it } from "vitest";
+import {
+  describe, expect, it,
+} from "vitest";
 import MarkdownModuleTextState from "../MarkdownModuleTextState";
 import MarkdownModuleHeadline3 from "../MarkdownModuleHeadline3.vue";
 

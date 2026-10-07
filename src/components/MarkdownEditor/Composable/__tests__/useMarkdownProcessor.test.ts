@@ -1,5 +1,7 @@
 import { nextTick, ref } from "vue";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  beforeEach, describe, expect, it, vi,
+} from "vitest";
 import { MarkdownAstNode } from "../../Types/MarkdownAstNode";
 import MarkdownNodeType from "../../Types/MarkdownAstNodeType";
 import MarkdownModuleTextState from "../../Modules/MarkdownModuleTextState";
@@ -10,7 +12,11 @@ import MarkdownModuleCodeBlockState from "../../Modules/MarkdownModuleCodeBlockS
 import MarkdownModuleTableState from "../../Modules/MarkdownModuleTableState";
 
 // --- Hoist mock functions so they are available when vi.mock factory runs ---
-const { mockCreateTextNode, mockCreateImageNode, mockCreateBlankParagraph, mockCreateListNode, mockCreateOrderedListNode, mockCreateBlockquoteNode, mockCreateCodeBlockNode, mockCreateHrNode, mockCreateTableNode, mockCreateFileNode, mockUnifiedParse } = vi.hoisted(() => ({
+const {
+  mockCreateTextNode, mockCreateImageNode, mockCreateBlankParagraph, mockCreateListNode,
+  mockCreateOrderedListNode, mockCreateBlockquoteNode, mockCreateCodeBlockNode, mockCreateHrNode,
+  mockCreateTableNode, mockCreateFileNode, mockUnifiedParse,
+} = vi.hoisted(() => ({
   mockCreateTextNode: vi.fn(),
   mockCreateImageNode: vi.fn(),
   mockCreateBlankParagraph: vi.fn(),
@@ -52,8 +58,15 @@ vi.mock("../../Factory/MarkdownNodeFactory", () => ({
 }));
 
 // --- Node builder helpers (available after imports are resolved) ---
-const makeFakeTextNode = (type: MarkdownNodeType, text: string): MarkdownAstNode<MarkdownModuleTextState> =>
-  new MarkdownAstNode({ type, componentState: new MarkdownModuleTextState({ text }), editingState: { cursorPosition: 0 } });
+const makeFakeTextNode = (
+  type: MarkdownNodeType,
+  text: string,
+): MarkdownAstNode<MarkdownModuleTextState> =>
+  new MarkdownAstNode({
+    type,
+    componentState: new MarkdownModuleTextState({ text }),
+    editingState: { cursorPosition: 0 },
+  });
 
 const makeFakeImageNode = (src: string, alt: string, caption: string): MarkdownAstNode<MarkdownModuleImageState> =>
   new MarkdownAstNode({
@@ -62,7 +75,10 @@ const makeFakeImageNode = (src: string, alt: string, caption: string): MarkdownA
     editingState: { cursorPosition: 0 },
   });
 
-const makeFakeListNode = (items: string[], type: MarkdownNodeType = MarkdownNodeType.LIST): MarkdownAstNode<MarkdownModuleListState> =>
+const makeFakeListNode = (
+  items: string[],
+  type: MarkdownNodeType = MarkdownNodeType.LIST,
+): MarkdownAstNode<MarkdownModuleListState> =>
   new MarkdownAstNode({
     type,
     componentState: new MarkdownModuleListState({
@@ -102,9 +118,9 @@ describe("useMarkdownProcessor", () => {
     // Default: unified mock passes through to the real remark-parse + remark-gfm
     // parser — matching the real pipeline used by parseMarkdown (remark-gfm adds
     // GFM tables and auto-links bare URLs, which the parser must handle).
-    const actualUnified = await vi.importActual<any>("unified");
-    const actualRemarkParse = await vi.importActual<any>("remark-parse");
-    const actualRemarkGfm = await vi.importActual<any>("remark-gfm");
+    const actualUnified = await vi.importActual<typeof import("unified")>("unified");
+    const actualRemarkParse = await vi.importActual<typeof import("remark-parse")>("remark-parse");
+    const actualRemarkGfm = await vi.importActual<typeof import("remark-gfm")>("remark-gfm");
     const remarkGfmPlugin = actualRemarkGfm.default ?? actualRemarkGfm;
     mockUnifiedParse.mockImplementation((input: string) => {
       return actualUnified.unified().use(actualRemarkParse.default).use(remarkGfmPlugin).parse(input);
@@ -207,7 +223,7 @@ describe("useMarkdownProcessor", () => {
 
     it("parses the custom image block syntax into an IMAGE node", () => {
       // Arrange
-      const imageMarkdown = '"""MarkdownModuleImage\nsrc: https://example.com/img.png\nalt: A picture\ncaption: My caption\n"""';
+      const imageMarkdown = "\"\"\"MarkdownModuleImage\nsrc: https://example.com/img.png\nalt: A picture\ncaption: My caption\n\"\"\"";
       const model = makeModel(imageMarkdown);
 
       // Act
@@ -221,7 +237,7 @@ describe("useMarkdownProcessor", () => {
 
     it("parses the custom file block syntax into a FILE node", () => {
       // Arrange
-      const fileMarkdown = '"""MarkdownModuleFile\nurl: https://example.com/doc.pdf\nfileName: report.pdf\nfileSize: 1024\nmimeType: application/pdf\n"""';
+      const fileMarkdown = "\"\"\"MarkdownModuleFile\nurl: https://example.com/doc.pdf\nfileName: report.pdf\nfileSize: 1024\nmimeType: application/pdf\n\"\"\"";
       const model = makeModel(fileMarkdown);
 
       // Act
@@ -360,7 +376,7 @@ describe("useMarkdownProcessor", () => {
 
     it("serializes a FILE node with custom block syntax", async () => {
       // Arrange
-      const fileMarkdown = '"""MarkdownModuleFile\nurl: https://example.com/doc.pdf\nfileName: report.pdf\nfileSize: 1024\nmimeType: application/pdf\n"""';
+      const fileMarkdown = "\"\"\"MarkdownModuleFile\nurl: https://example.com/doc.pdf\nfileName: report.pdf\nfileSize: 1024\nmimeType: application/pdf\n\"\"\"";
       const model = makeModel(fileMarkdown);
       const { markdownNodes } = useMarkdownProcessor(model);
 
@@ -372,7 +388,7 @@ describe("useMarkdownProcessor", () => {
       await nextTick();
 
       // Assert
-      expect(model.value).toContain('"""MarkdownModuleFile');
+      expect(model.value).toContain("\"\"\"MarkdownModuleFile");
       expect(model.value).toContain("url: https://example.com/new.pdf");
       expect(model.value).toContain("fileName: updated.pdf");
     });
@@ -426,7 +442,6 @@ describe("useMarkdownProcessor", () => {
     });
   });
 
-
   describe("addNodeWithType", () => {
     it("inserts a FILE node with JSON-encoded metadata", async () => {
       // Arrange
@@ -464,6 +479,187 @@ describe("useMarkdownProcessor", () => {
       // Assert
       expect(markdownNodes.value).toHaveLength(1);
       expect(markdownNodes.value[0]?.type).toBe(MarkdownNodeType.PARAGRAPH);
+    });
+  });
+
+  describe("splitListNode", () => {
+    it("drops the item at the given index and keeps the rest around an empty paragraph", () => {
+      // Arrange — item 1 is the empty item the user pressed Enter on
+      const model = makeModel("- a\n- b\n- c");
+      const { markdownNodes, splitListNode } = useMarkdownProcessor(model);
+      (markdownNodes.value[0]!.componentState as MarkdownModuleListState).items[1]!.text = "";
+      const listNode = markdownNodes.value[0]!;
+
+      // Act
+      const paragraphIndex = splitListNode(listNode, 1);
+
+      // Assert
+      expect(paragraphIndex).toBe(1);
+      expect(markdownNodes.value[paragraphIndex!]?.type).toBe(MarkdownNodeType.PARAGRAPH);
+      expect(markdownNodes.value).toHaveLength(3);
+      expect(markdownNodes.value[0]?.type).toBe(MarkdownNodeType.LIST);
+      expect((markdownNodes.value[0]?.componentState as MarkdownModuleListState).items.map(i => i.text)).toEqual(["a"]);
+      expect(markdownNodes.value[1]?.type).toBe(MarkdownNodeType.PARAGRAPH);
+      expect((markdownNodes.value[1]?.componentState as MarkdownModuleTextState).text).toBe("");
+      expect(markdownNodes.value[2]?.type).toBe(MarkdownNodeType.LIST);
+      expect((markdownNodes.value[2]?.componentState as MarkdownModuleListState).items.map(i => i.text)).toEqual(["c"]);
+    });
+
+    it("points the returned index at the empty paragraph when several items precede it", () => {
+      // Arrange — three items before the empty one
+      const model = makeModel("- a\n- b\n- c\n- d");
+      const { markdownNodes, splitListNode } = useMarkdownProcessor(model);
+      (markdownNodes.value[0]!.componentState as MarkdownModuleListState).items[3]!.text = "";
+
+      // Act
+      const paragraphIndex = splitListNode(markdownNodes.value[0]!, 3);
+
+      // Assert
+      expect(paragraphIndex).toBe(1);
+      expect(markdownNodes.value[paragraphIndex!]?.type).toBe(MarkdownNodeType.PARAGRAPH);
+      expect(markdownNodes.value[0]?.type).toBe(MarkdownNodeType.LIST);
+      expect(markdownNodes.value[2]).toBeUndefined();
+    });
+
+    it("closes the list when the empty item is the last one", () => {
+      // Arrange
+      const model = makeModel("- a\n- b");
+      const { markdownNodes, splitListNode } = useMarkdownProcessor(model);
+      const listNode = markdownNodes.value[0]!;
+
+      // Act
+      const paragraphIndex = splitListNode(listNode, 1);
+
+      // Assert
+      expect(paragraphIndex).toBe(1);
+      expect(markdownNodes.value).toHaveLength(2);
+      expect(markdownNodes.value[0]?.type).toBe(MarkdownNodeType.LIST);
+      expect(markdownNodes.value[1]?.type).toBe(MarkdownNodeType.PARAGRAPH);
+    });
+
+    it("puts the paragraph above the remaining items when the first item is emptied", () => {
+      // Arrange
+      const model = makeModel("- a\n- b");
+      const { markdownNodes, splitListNode } = useMarkdownProcessor(model);
+      (markdownNodes.value[0]!.componentState as MarkdownModuleListState).items[0]!.text = "";
+
+      // Act
+      const paragraphIndex = splitListNode(markdownNodes.value[0]!, 0);
+
+      // Assert
+      expect(paragraphIndex).toBe(0);
+      expect(markdownNodes.value[0]?.type).toBe(MarkdownNodeType.PARAGRAPH);
+      expect(markdownNodes.value[1]?.type).toBe(MarkdownNodeType.LIST);
+      expect((markdownNodes.value[1]?.componentState as MarkdownModuleListState).items.map(i => i.text)).toEqual(["b"]);
+    });
+
+    it("replaces the list with a paragraph when it only held the empty item", () => {
+      // Arrange
+      const model = makeModel("- a");
+      const { markdownNodes, splitListNode } = useMarkdownProcessor(model);
+      const listNode = markdownNodes.value[0]!;
+
+      // Act
+      const paragraphIndex = splitListNode(listNode, 0);
+
+      // Assert
+      expect(paragraphIndex).toBe(0);
+      expect(markdownNodes.value).toHaveLength(1);
+      expect(markdownNodes.value[0]?.type).toBe(MarkdownNodeType.PARAGRAPH);
+    });
+
+    it("keeps the ordered list type on both halves", () => {
+      // Arrange
+      const model = makeModel("1. a\n2. b\n3. c");
+      const { markdownNodes, splitListNode } = useMarkdownProcessor(model);
+      const listNode = markdownNodes.value[0]!;
+
+      // Act
+      splitListNode(listNode, 1);
+
+      // Assert
+      expect(markdownNodes.value[0]?.type).toBe(MarkdownNodeType.ORDERED_LIST);
+      expect(markdownNodes.value[2]?.type).toBe(MarkdownNodeType.ORDERED_LIST);
+    });
+
+    it("returns null when the node is not part of the document", () => {
+      // Arrange
+      const model = makeModel("- a\n- b");
+      const { splitListNode } = useMarkdownProcessor(model);
+      const orphanNode = makeFakeListNode(["x"]);
+
+      // Act
+      const result = splitListNode(orphanNode, 0);
+
+      // Assert
+      expect(result).toBeNull();
+    });
+
+    it("returns null when the item index is out of range", () => {
+      // Arrange
+      const model = makeModel("- a\n- b");
+      const { markdownNodes, splitListNode } = useMarkdownProcessor(model);
+      const listNode = markdownNodes.value[0]!;
+
+      // Act
+      const result = splitListNode(listNode, 5);
+
+      // Assert
+      expect(result).toBeNull();
+    });
+  });
+
+  describe("merging adjacent lists", () => {
+    /** Builds a list of ["a", "", "c"] and splits it at the empty item. */
+    function makeSplitList(type: MarkdownNodeType = MarkdownNodeType.LIST) {
+      const model = makeModel(type === MarkdownNodeType.LIST ? "- a\n- x\n- c" : "1. a\n2. x\n3. c");
+      const processor = useMarkdownProcessor(model);
+      const listState = processor.markdownNodes.value[0]!.componentState as MarkdownModuleListState;
+      listState.items[1]!.text = "";
+
+      processor.splitListNode(processor.markdownNodes.value[0]!, 1);
+      return processor;
+    }
+
+    it("merges two lists of the same type once the paragraph between them is deleted", async () => {
+      // Arrange
+      const { markdownNodes, deleteNode } = makeSplitList();
+
+      // Act
+      deleteNode(1);
+      await nextTick();
+
+      // Assert
+      expect(markdownNodes.value).toHaveLength(1);
+      expect(markdownNodes.value[0]?.type).toBe(MarkdownNodeType.LIST);
+      expect((markdownNodes.value[0]?.componentState as MarkdownModuleListState).items.map(i => i.text)).toEqual(["a", "c"]);
+    });
+
+    it("does not merge lists of different types", async () => {
+      // Arrange
+      const { markdownNodes, deleteNode } = makeSplitList();
+      markdownNodes.value[2]!.type = MarkdownNodeType.ORDERED_LIST;
+
+      // Act
+      deleteNode(1);
+      await nextTick();
+
+      // Assert
+      expect(markdownNodes.value).toHaveLength(2);
+    });
+
+    it("does not merge lists separated by a non-empty block", async () => {
+      // Arrange
+      const model = makeModel("# Title\n\n- a");
+      const { markdownNodes, deleteNode } = useMarkdownProcessor(model);
+
+      // Act
+      deleteNode(0);
+      await nextTick();
+
+      // Assert
+      expect(markdownNodes.value).toHaveLength(1);
+      expect(markdownNodes.value[0]?.type).toBe(MarkdownNodeType.LIST);
     });
   });
 
@@ -699,7 +895,7 @@ describe("useMarkdownProcessor", () => {
 
     it("serializes an IMAGE node to the custom block syntax", async () => {
       // Arrange
-      const model = makeModel('"""MarkdownModuleImage\nsrc: https://x.com/pic.png\nalt: Alt\ncaption: Capt\n"""');
+      const model = makeModel("\"\"\"MarkdownModuleImage\nsrc: https://x.com/pic.png\nalt: Alt\ncaption: Capt\n\"\"\"");
       const { markdownNodes } = useMarkdownProcessor(model);
 
       // Act — mutate to trigger serialization
@@ -709,7 +905,7 @@ describe("useMarkdownProcessor", () => {
       await nextTick();
 
       // Assert
-      expect(model.value).toBe('"""MarkdownModuleImage\nsrc: https://x.com/new.png\nalt: Alt\ncaption: Capt\n"""');
+      expect(model.value).toBe("\"\"\"MarkdownModuleImage\nsrc: https://x.com/new.png\nalt: Alt\ncaption: Capt\n\"\"\"");
     });
   });
 
@@ -847,7 +1043,7 @@ describe("useMarkdownProcessor", () => {
 
     it("handles custom block syntax with unknown module name as regular text", () => {
       // Arrange
-      const unknownBlock = '"""UnknownModule\nsome: value\n"""';
+      const unknownBlock = "\"\"\"UnknownModule\nsome: value\n\"\"\"";
       const model = makeModel(unknownBlock);
 
       // Act
@@ -878,7 +1074,7 @@ describe("useMarkdownProcessor", () => {
       const model = makeModel("- simple item");
 
       // Act
-      const { markdownNodes } = useMarkdownProcessor(model);
+      useMarkdownProcessor(model);
 
       // Assert
       expect(mockCreateListNode).toHaveBeenCalledWith(["simple item"]);
@@ -944,7 +1140,7 @@ describe("useMarkdownProcessor", () => {
 
     it("handles image block with missing src/alt/caption regex captures", () => {
       // Arrange
-      const imageMarkdown = '"""MarkdownModuleImage\n"""';
+      const imageMarkdown = "\"\"\"MarkdownModuleImage\n\"\"\"";
       const model = makeModel(imageMarkdown);
 
       // Act
@@ -969,7 +1165,7 @@ describe("useMarkdownProcessor", () => {
 
       // Act
       const model = makeModel("ignored");
-      const { markdownNodes } = useMarkdownProcessor(model);
+      useMarkdownProcessor(model);
 
       // Assert — firstParagraph is falsy, returns "" via fallback
       expect(mockCreateListNode).toHaveBeenCalledWith([""]);
@@ -986,7 +1182,7 @@ describe("useMarkdownProcessor", () => {
 
       // Act
       const model = makeModel("ignored");
-      const { markdownNodes } = useMarkdownProcessor(model);
+      useMarkdownProcessor(model);
 
       // Assert — node.children[0].value ?? "" fallback hit, phrasingContentToText sees "undefined"
       expect(mockCreateTextNode).toHaveBeenCalledWith(MarkdownNodeType.PARAGRAPH, "undefined");
@@ -996,14 +1192,15 @@ describe("useMarkdownProcessor", () => {
       // Arrange — monkey-patch String.split so that a triple-quoted marker
       // returns an empty array, hitting the (text.split("\n")[0] ?? "") branch
       const originalSplit = String.prototype.split;
-      const splitStub = function (this: string, separator: any, limit?: any): string[] {
-        if (this.startsWith('"""SPLIT_EMPTY')) return [];
-        return originalSplit.call(this, separator, limit) as string[];
+      const callOriginalSplit = originalSplit as (separator: string | RegExp, limit?: number) => string[];
+      const splitStub = function (this: string, separator: string | RegExp, limit?: number): string[] {
+        if (this.startsWith("\"\"\"SPLIT_EMPTY")) return [];
+        return callOriginalSplit.call(this, separator, limit);
       };
-      String.prototype.split = splitStub;
+      String.prototype.split = splitStub as typeof String.prototype.split;
 
       try {
-        const model = makeModel('"""SPLIT_EMPTY\nsome: value\n"""');
+        const model = makeModel("\"\"\"SPLIT_EMPTY\nsome: value\n\"\"\"");
 
         // Act
         const { markdownNodes } = useMarkdownProcessor(model);
@@ -1062,7 +1259,7 @@ describe("useMarkdownProcessor", () => {
 
     it("replaces an IMAGE node with a PARAGRAPH, hitting isTextNodeState false branch", async () => {
       // Arrange
-      const model = makeModel('"""MarkdownModuleImage\nsrc: x\nalt: y\ncaption: z\n"""');
+      const model = makeModel("\"\"\"MarkdownModuleImage\nsrc: x\nalt: y\ncaption: z\n\"\"\"");
       const { markdownNodes, replaceNodeType } = useMarkdownProcessor(model);
       const imageNode = markdownNodes.value[0]!;
 

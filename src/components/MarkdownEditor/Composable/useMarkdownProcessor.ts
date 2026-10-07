@@ -1,7 +1,10 @@
-import { type ModelRef, nextTick, ref, watch } from "vue";
+import {
+  type ModelRef, nextTick, ref, watch,
+} from "vue";
 import MarkdownNodeFactory from "../Factory/MarkdownNodeFactory";
 import { isTextNodeState } from "../MarkdownComponentRegistry";
 import type MarkdownModuleFileState from "../Modules/MarkdownModuleFileState";
+import type MarkdownModuleListState from "../Modules/MarkdownModuleListState";
 import type { MarkdownAstNode } from "../Types/MarkdownAstNode";
 import MarkdownNodeType, { isTextNodeType } from "../Types/MarkdownAstNodeType";
 import { parseMarkdown } from "./parseMarkdown";
@@ -33,7 +36,61 @@ function useMarkdownProcessor(modelValue: ModelRef<string | undefined>) {
   function deleteNode(nodeIndex: number) {
     nextTick(() => {
       markdownNodes.value.splice(nodeIndex, 1);
+      mergeAdjacentLists();
     });
+  }
+
+  /**
+   * Merges lists of the same type that ended up next to each other (for
+   * example after the empty paragraph between two split lists is deleted).
+   */
+  function mergeAdjacentLists() {
+    const listTypes = [MarkdownNodeType.LIST, MarkdownNodeType.ORDERED_LIST];
+
+    for (let index = 0; index < markdownNodes.value.length - 1;) {
+      const current = markdownNodes.value[index];
+      const next = markdownNodes.value[index + 1];
+
+      if (current.type === next.type && listTypes.includes(current.type)) {
+        const currentState = current.componentState as MarkdownModuleListState;
+        const nextState = next.componentState as MarkdownModuleListState;
+        currentState.items = [...currentState.items, ...nextState.items];
+        markdownNodes.value.splice(index + 1, 1);
+      } else {
+        index += 1;
+      }
+    }
+  }
+
+  /**
+   * Closes a list at `itemIndex`, replacing it with the items before, an empty
+   * paragraph and the items after. Returns the index of the new paragraph.
+   */
+  function splitListNode(node: MarkdownAstNode, itemIndex: number): number | null {
+    const nodeIndex = markdownNodes.value.indexOf(node);
+    if (nodeIndex === -1) return null;
+
+    const listState = node.componentState as MarkdownModuleListState;
+    if (itemIndex < 0 || itemIndex >= listState.items.length) return null;
+
+    const beforeTexts = listState.items.slice(0, itemIndex).map(item => item.text);
+    const afterTexts = listState.items.slice(itemIndex + 1).map(item => item.text);
+
+    const replacement: MarkdownAstNode[] = [];
+    if (beforeTexts.length > 0) replacement.push(createListLikeNode(node.type, beforeTexts));
+    replacement.push(MarkdownNodeFactory.createBlankParagraph());
+    if (afterTexts.length > 0) replacement.push(createListLikeNode(node.type, afterTexts));
+
+    markdownNodes.value.splice(nodeIndex, 1, ...replacement);
+
+    // The paragraph sits right after the first list half, when there is one.
+    return nodeIndex + (beforeTexts.length > 0 ? 1 : 0);
+  }
+
+  function createListLikeNode(type: MarkdownNodeType, texts: string[]): MarkdownAstNode {
+    return type === MarkdownNodeType.ORDERED_LIST
+      ? MarkdownNodeFactory.createOrderedListNode(texts)
+      : MarkdownNodeFactory.createListNode(texts);
   }
 
   function addBlankNode(nodeIndex: number) {
@@ -125,6 +182,7 @@ function useMarkdownProcessor(modelValue: ModelRef<string | undefined>) {
     addNodeWithType,
     replaceNodeType,
     moveNode,
+    splitListNode,
   };
 }
 

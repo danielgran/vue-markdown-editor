@@ -7,4 +7,3 @@ export default class MarkdownModuleListState {
     Object.assign(this, object);
   }
 }
-

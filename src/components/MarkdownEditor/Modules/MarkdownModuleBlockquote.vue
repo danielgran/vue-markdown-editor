@@ -40,6 +40,9 @@ const editor = useEditor({
       codeBlock: false,
       horizontalRule: false,
       hardBreak: false,
+      bulletList: false,
+      orderedList: false,
+      listItem: false,
       blockquote: {
         HTMLAttributes: {
           class: "markdown-module-blockquote",

@@ -1,4 +1,6 @@
-import type { Heading, PhrasingContent, Root } from "mdast";
+import type {
+  Heading, PhrasingContent, Root,
+} from "mdast";
 import { marked } from "marked";
 import remarkParse from "remark-parse";
 import { unified } from "unified";

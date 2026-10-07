@@ -1,5 +1,5 @@
 <template>
-  <div @keydown.enter.stop @keydown.shift-enter.stop>
+  <div @keydown.enter.stop>
     <EditorContent :editor="editor" />
   </div>
 </template>

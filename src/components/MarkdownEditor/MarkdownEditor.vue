@@ -4,44 +4,47 @@
     class="markdown-editor"
     @click="handleClickBlankArea"
   >
-  <template v-if="markdownNodes.length > 0">
-    <MarkdownEditorModule
-      v-for="(node, index) in markdownNodes"
-      :key="node.id"
-      :node="node"
-      :focused="focusedNode === node"
-      @click.stop
-      @keydown="handleKeyDownOnNode(node, $event)"
-      @focus="handleFocusOnNode(node)"
-      @update:cursor-position="(pos) => handleUpdateCursorPosition(node, pos)"
-      @change-type="handleChangeType"
-    >
-      <template #focus-controls>
-        <MarkdownEditorFocusControls
-          @delete="deleteNode(index)"
-          @add="addBlankNode(index)"
-        />
-      </template>
-      <template #after-controls>
-        <!-- Additional controls can be added here -->
-        <slot name="after-controls" />
-      </template>
-    </MarkdownEditorModule>
-  </template>
-  <template v-else>
-    <p
-      class="text-gray-500 italic"
-    >
-      Click to start writing...
-    </p>
-  </template>
+    <template v-if="markdownNodes.length > 0">
+      <MarkdownEditorModule
+        v-for="(node, index) in markdownNodes"
+        :key="node.id"
+        :node="node"
+        :focused="focusedNode === node"
+        @click.stop
+        @keydown="handleKeyDownOnNode(node, $event)"
+        @focus="handleFocusOnNode(node)"
+        @update:cursor-position="(pos) => handleUpdateCursorPosition(node, pos)"
+        @change-type="handleChangeType"
+      >
+        <template #focus-controls>
+          <MarkdownEditorFocusControls
+            @delete="deleteNode(index)"
+            @add="addBlankNode(index)"
+          />
+        </template>
+        <template #after-controls>
+          <!-- Additional controls can be added here -->
+          <slot name="after-controls" />
+        </template>
+      </MarkdownEditorModule>
+    </template>
+    <template v-else>
+      <p
+        class="text-gray-500 italic"
+      >
+        Click to start writing...
+      </p>
+    </template>
     <MarkdownEditorTextSelectionContextMenu />
   </div>
 </template>
 
 <script lang="ts" setup>
 import { useSortable } from "@vueuse/integrations/useSortable";
-import { nextTick, onMounted, ref, useTemplateRef, type PropType } from "vue";
+import {
+  nextTick, onMounted, ref, useTemplateRef, type PropType,
+} from "vue";
+import { provideMarkdownModuleContext } from "./Composable/markdownModuleContext";
 import type { MarkdownEditorInstance } from "./Composable/useMarkdownEditor";
 import MarkdownEditorTextSelectionContextMenu from "./ContextMenu/MarkdownEditorTextSelectionContextMenu.vue";
 import MarkdownEditorFocusControls from "./MarkdownEditorFocusControls.vue";
@@ -64,10 +67,12 @@ const props = defineProps({
   imageUploadFunction: {
     type: Function as PropType<(file: File) => Promise<string>>,
     required: false,
+    default: undefined,
   },
   fileUploadFunction: {
     type: Function as PropType<(file: File) => Promise<string>>,
     required: false,
+    default: undefined,
   },
 });
 
@@ -75,7 +80,7 @@ const emit = defineEmits<{
   (e: "update:focused-node", value: MarkdownAstNode | null): void;
 }>();
 
-const { markdownNodes, deleteNode, addBlankNode, addNodeWithType, replaceNodeType } = props.editor;
+const { markdownNodes, deleteNode, addBlankNode, addNodeWithType, replaceNodeType, splitListNode } = props.editor;
 
 const editorContainerRef = useTemplateRef("editorContainerRef");
 useSortable(() => editorContainerRef.value, markdownNodes, {
@@ -98,6 +103,25 @@ function handleChangeType(node: MarkdownAstNode, newType: MarkdownNodeType) {
     focusNodeByIndex(result.index);
   }
 }
+
+// Lets modules change editor state directly instead of emitting events upwards.
+provideMarkdownModuleContext({
+  exitList: (state, itemIndex) => {
+    const node = markdownNodes.value.find(candidate => candidate.componentState === state);
+    if (!node) return;
+
+    const paragraphIndex = splitListNode(node, itemIndex);
+    if (paragraphIndex === null) return;
+
+    focusNodeByIndex(paragraphIndex);
+  },
+  closeList: (state) => {
+    const index = markdownNodes.value.findIndex(candidate => candidate.componentState === state);
+    if (index === -1) return;
+
+    focusNodeByIndex(addBlankNode(index));
+  },
+});
 
 function handleKeyDownOnNode(node: MarkdownAstNode, event: KeyboardEvent) {
   const nodeIndex = markdownNodes.value.indexOf(node);
@@ -277,7 +301,6 @@ function moveFocusOneDown() {
 onMounted(() => {
   document.addEventListener("paste", handlePaste);
 });
-
 
 </script>
 

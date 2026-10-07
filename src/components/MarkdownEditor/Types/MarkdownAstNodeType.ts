@@ -35,4 +35,3 @@ export function isTextNodeType(type: MarkdownNodeType): type is TextishNodeType 
 }
 
 export default MarkdownNodeType;
-

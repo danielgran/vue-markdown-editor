@@ -30,7 +30,10 @@
         </button>
       </div>
       <pre v-if="activeTab === 'raw'">{{ editor.markdownContent.value }}</pre>
-      <div v-else class="dev-preview">
+      <div
+        v-else
+        class="dev-preview"
+      >
         <MarkdownRenderer :markdown="editor.markdownContent.value" />
       </div>
     </aside>
@@ -43,8 +46,10 @@
           <kbd>↑</kbd>/<kbd>↓</kbd> to navigate, and drag the handle (⠿) to reorder.
         </p>
       </div>
-      <MarkdownEditor :editor="editor" :image-upload-function="handleUploadImage"
-      :file-upload-function="handleFileupload"
+      <MarkdownEditor
+        :editor="editor"
+        :image-upload-function="handleUploadImage"
+        :file-upload-function="handleFileupload"
       />
     </main>
   </div>

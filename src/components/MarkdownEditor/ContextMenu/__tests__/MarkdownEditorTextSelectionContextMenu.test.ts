@@ -1,6 +1,8 @@
 import { shallowMount } from "@vue/test-utils";
 import { ref } from "vue";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  beforeEach, describe, expect, it, vi,
+} from "vitest";
 
 // --- Mock useTextSelectionMenu (second-layer dep) ---
 const mockIsVisible = ref(false);

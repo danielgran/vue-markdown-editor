@@ -18,4 +18,3 @@ export const PreventNewline = Extension.create({
     };
   },
 });
-
