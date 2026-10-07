@@ -172,7 +172,8 @@ Images are rendered as custom blocks with their own context menu and editing mod
 ### Keyboard Shortcuts
 
 - Arrow Up / Down to move focus between blocks
-- Enter to split a block and create a new one below
+- Enter to split a block at the caret; at the start of a block it opens an empty block above, and a split headline continues as plain text
+- Backspace at the start of a block merges it into the text block above
 - Backspace on an empty block removes it
 - Delete on an empty block removes it (focus stays at same index)`);
 

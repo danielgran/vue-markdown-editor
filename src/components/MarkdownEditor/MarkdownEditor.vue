@@ -45,6 +45,7 @@ import {
   nextTick, onMounted, ref, useTemplateRef, type PropType,
 } from "vue";
 import { provideMarkdownModuleContext } from "./Composable/markdownModuleContext";
+import { renderedTextLength } from "./Composable/useReflectiveState";
 import type { MarkdownEditorInstance } from "./Composable/useMarkdownEditor";
 import MarkdownEditorTextSelectionContextMenu from "./ContextMenu/MarkdownEditorTextSelectionContextMenu.vue";
 import MarkdownEditorFocusControls from "./MarkdownEditorFocusControls.vue";
@@ -80,7 +81,10 @@ const emit = defineEmits<{
   (e: "update:focused-node", value: MarkdownAstNode | null): void;
 }>();
 
-const { markdownNodes, deleteNode, addBlankNode, addNodeWithType, replaceNodeType, splitListNode } = props.editor;
+const {
+  markdownNodes, deleteNode, addBlankNode, addNodeWithType, replaceNodeType, splitListNode,
+  splitTextNode, mergeTextNodeIntoPrevious,
+} = props.editor;
 
 const editorContainerRef = useTemplateRef("editorContainerRef");
 useSortable(() => editorContainerRef.value, markdownNodes, {
@@ -120,6 +124,44 @@ provideMarkdownModuleContext({
     if (index === -1) return;
 
     focusNodeByIndex(addBlankNode(index));
+  },
+  splitTextBlock: (state, before, after) => {
+    const node = markdownNodes.value.find(candidate => candidate.componentState === state);
+    if (!node) return;
+
+    const nodeIndex = markdownNodes.value.indexOf(node);
+
+    // Enter at the end of the text continues writing in a new module below.
+    if (after === "") {
+      addBlankNode(nodeIndex);
+      moveFocusOneDown();
+      return;
+    }
+
+    // Enter on the first character opens an empty module above, leaving the caret
+    // in the text so typing continues where the user was.
+    if (before === "") {
+      addBlankNode(nodeIndex - 1);
+      focusNodeByIndex(nodeIndex + 1);
+      return;
+    }
+
+    const newIndex = splitTextNode(node, before, after);
+    if (newIndex === null) return;
+
+    focusNodeByIndex(newIndex);
+  },
+  mergeTextBlockBackward: (state) => {
+    const node = markdownNodes.value.find(candidate => candidate.componentState === state);
+    if (!node) return false;
+
+    const merged = mergeTextNodeIntoPrevious(node);
+    if (!merged) return false;
+
+    // The caret ends up where the two blocks are joined, inside the merged block.
+    merged.node.editingState.cursorPosition = renderedTextLength(merged.aboveText) + 1;
+    focusNodeByIndex(merged.index);
+    return true;
   },
 });
 

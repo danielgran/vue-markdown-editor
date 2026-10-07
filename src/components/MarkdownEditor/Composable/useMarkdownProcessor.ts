@@ -6,7 +6,7 @@ import { isTextNodeState } from "../MarkdownComponentRegistry";
 import type MarkdownModuleFileState from "../Modules/MarkdownModuleFileState";
 import type MarkdownModuleListState from "../Modules/MarkdownModuleListState";
 import type { MarkdownAstNode } from "../Types/MarkdownAstNode";
-import MarkdownNodeType, { isTextNodeType } from "../Types/MarkdownAstNodeType";
+import MarkdownNodeType, { isHeadlineNodeType, isTextNodeType } from "../Types/MarkdownAstNodeType";
 import { parseMarkdown } from "./parseMarkdown";
 import { serializeMarkdown } from "./serializeMarkdown";
 
@@ -85,6 +85,54 @@ function useMarkdownProcessor(modelValue: ModelRef<string | undefined>) {
 
     // The paragraph sits right after the first list half, when there is one.
     return nodeIndex + (beforeTexts.length > 0 ? 1 : 0);
+  }
+
+  /**
+   * Splits a text node at the caret: the node is replaced by `before` (a fresh
+   * instance, so the module re-renders the shortened content) and `after` moves
+   * into a new node right after it. A headline continues as a paragraph, like
+   * Notion, every other block keeps its own type. Returns the new node index.
+   */
+  function splitTextNode(node: MarkdownAstNode, before: string, after: string): number | null {
+    const nodeIndex = markdownNodes.value.indexOf(node);
+    if (nodeIndex === -1) return null;
+    if (!isTextNodeState(node) || !isTextNodeType(node.type)) return null;
+
+    const continuationType = isHeadlineNodeType(node.type) ? MarkdownNodeType.PARAGRAPH : node.type;
+
+    markdownNodes.value.splice(
+      nodeIndex,
+      1,
+      MarkdownNodeFactory.createTextNode(node.type, before),
+      MarkdownNodeFactory.createTextNode(continuationType, after),
+    );
+
+    return nodeIndex + 1;
+  }
+
+  /**
+   * Appends a text node to the text node above it, which keeps its own type, and
+   * removes the node itself. Returns the merged node together with the markdown
+   * it took over from above, or null when there is no text block above.
+   */
+  function mergeTextNodeIntoPrevious(
+    node: MarkdownAstNode,
+  ): { node: MarkdownAstNode; index: number; aboveText: string } | null {
+    const nodeIndex = markdownNodes.value.indexOf(node);
+    if (nodeIndex <= 0) return null;
+    if (!isTextNodeState(node) || !isTextNodeType(node.type)) return null;
+
+    const previous = markdownNodes.value[nodeIndex - 1];
+    if (!previous || !isTextNodeState(previous) || !isTextNodeType(previous.type)) return null;
+
+    const aboveText = previous.componentState.text;
+    const merged = MarkdownNodeFactory.createTextNode(previous.type, aboveText + node.componentState.text);
+
+    markdownNodes.value.splice(nodeIndex - 1, 2, merged);
+
+    return {
+      node: merged, index: nodeIndex - 1, aboveText,
+    };
   }
 
   function createListLikeNode(type: MarkdownNodeType, texts: string[]): MarkdownAstNode {
@@ -183,6 +231,8 @@ function useMarkdownProcessor(modelValue: ModelRef<string | undefined>) {
     replaceNodeType,
     moveNode,
     splitListNode,
+    splitTextNode,
+    mergeTextNodeIntoPrevious,
   };
 }
 

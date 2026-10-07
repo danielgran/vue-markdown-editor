@@ -1,3 +1,4 @@
+import { getHTMLFromFragment, type Editor } from "@tiptap/core";
 import type { EditorContent, EditorEvents } from "@tiptap/vue-3";
 import { marked } from "marked";
 import TurndownService from "turndown";
@@ -5,8 +6,10 @@ import {
   nextTick, ref, type ModelRef, type Ref,
 } from "vue";
 import type MarkdownModuleTextState from "../Modules/MarkdownModuleTextState";
+import { TextBlockKeys } from "../TipTap/TextBlockKeys";
 import type { TextishEmitFunction } from "../Types/TextishEmits";
 import { detectBlockTypeFromContent } from "./HeadlineTypeMap";
+import { useMarkdownModuleContext } from "./markdownModuleContext";
 
 const turndownService = new TurndownService();
 // Override the default escape function to prevent escaping of special characters,
@@ -30,7 +33,17 @@ function htmlToMarkdown(html: string): string {
   return turndownService.turndown(html);
 }
 
-export { markdownToHtml, htmlToMarkdown };
+/** Number of characters the given markdown renders as, e.g. for caret offsets. */
+function renderedTextLength(markdown: string): number {
+  const container = document.createElement("div");
+  container.innerHTML = markdownToHtml(markdown);
+
+  return container.textContent?.length ?? markdown.length;
+}
+
+export {
+  markdownToHtml, htmlToMarkdown, renderedTextLength,
+};
 
 export default function useReflectiveState<T extends MarkdownModuleTextState>(options: {
   modelRef: ModelRef<T>;
@@ -39,6 +52,7 @@ export default function useReflectiveState<T extends MarkdownModuleTextState>(op
   containingHtmlElementRef?: Ref<HTMLElement | undefined>;
 }) {
   const editorContent = ref(markdownToHtml(options.modelRef.value.text));
+  const moduleContext = useMarkdownModuleContext();
 
   async function handleTipTapUpdateEvent(event: EditorEvents["update"]) {
     emitHtml(event.editor.getHTML());
@@ -49,6 +63,70 @@ export default function useReflectiveState<T extends MarkdownModuleTextState>(op
     const markdown = htmlToMarkdown(event.editor.getHTML());
     detectInlineTypeChange(markdown, event.transaction.selection.anchor);
   }
+
+  /** The caret as ProseMirror position, preferring the selection the user sees. */
+  function domCaretPosition(editor: Editor): number | null {
+    const domSelection = window.getSelection();
+    const dom = editor.view.dom;
+
+    if (!domSelection?.anchorNode || !dom.contains(domSelection.anchorNode)) return null;
+
+    return editor.view.posAtDOM(domSelection.anchorNode, domSelection.anchorOffset);
+  }
+
+  function caretPosition(editor: Editor): number {
+    return domCaretPosition(editor) ?? editor.state.selection.anchor;
+  }
+
+  /** Whether the caret sits before the first character of the block. */
+  function isCaretAtStart(editor: Editor): boolean {
+    const domPosition = domCaretPosition(editor);
+    if (domPosition !== null) return domPosition === 1 && window.getSelection()?.isCollapsed === true;
+
+    const { selection } = editor.state;
+    return selection.empty && selection.anchor === 1;
+  }
+
+  /**
+   * The module content before and after the caret as markdown. Deriving both
+   * halves from the document keeps inline markup intact, so splitting inside a
+   * bold or italic run does not cut through its markers.
+   */
+  function splitContentAtCaret(): { before: string; after: string } | null {
+    const editor = options.editorRef?.value?.editor;
+    if (!editor) return null;
+
+    const position = caretPosition(editor);
+    const { doc } = editor.state;
+
+    return {
+      before: htmlToMarkdown(getHTMLFromFragment(doc.slice(0, position).content, editor.schema)),
+      after: htmlToMarkdown(getHTMLFromFragment(doc.slice(position).content, editor.schema)),
+    };
+  }
+
+  /** Hands Enter to the host, which decides how the block is split. */
+  function handleEnter() {
+    const halves = splitContentAtCaret();
+    if (!halves) return;
+
+    moduleContext.splitTextBlock(options.modelRef.value, halves.before, halves.after);
+  }
+
+  /**
+   * Merges the block into the text block above when Backspace is pressed at the
+   * start. Empty blocks keep falling through, so they remove themselves instead.
+   */
+  function handleBackspaceAtStart(): boolean {
+    const editor = options.editorRef?.value?.editor;
+    if (!editor) return false;
+    if (options.modelRef.value.text === "") return false;
+    if (!isCaretAtStart(editor)) return false;
+
+    return moduleContext.mergeTextBlockBackward(options.modelRef.value);
+  }
+
+  const textBlockKeys = TextBlockKeys({ onEnter: handleEnter, onBackspaceAtStart: handleBackspaceAtStart });
 
   function detectInlineTypeChange(markdown: string, cursorPosition: number) {
     const detected = detectBlockTypeFromContent(markdown, cursorPosition);
@@ -76,13 +154,20 @@ export default function useReflectiveState<T extends MarkdownModuleTextState>(op
     options.emit("update:cursor-position", cursorPosition);
   }
 
-  function focus() {
+  /** Focuses the block, optionally placing the caret at a ProseMirror position. */
+  function focus(cursorPosition?: number) {
     if (options.editorRef?.value?.editor) {
-      options.editorRef.value.editor.commands.focus();
+      options.editorRef.value.editor.commands.focus(cursorPosition);
       return;
     }
     options.containingHtmlElementRef?.value?.focus();
   }
 
-  return { handleTipTapUpdateEvent, handleKeyDown, editorContent, expose: { focus } };
+  return {
+    handleTipTapUpdateEvent,
+    handleKeyDown,
+    editorContent,
+    textBlockKeys,
+    expose: { focus },
+  };
 }

@@ -12,7 +12,6 @@ import { EditorContent, useEditor } from "@tiptap/vue-3";
 import { ref } from "vue";
 import { activeEditor } from "../Composable/activeEditorStore";
 import useReflectiveState from "../Composable/useReflectiveState";
-import { PreventNewline } from "../TipTap/SingleLineExtension";
 import type { TextishEmits } from "../Types/TextishEmits";
 import type MarkdownModuleTextState from "./MarkdownModuleTextState";
 
@@ -45,7 +44,7 @@ const editor = useEditor({
       orderedList: false,
       listItem: false,
     }),
-    PreventNewline,
+    state.textBlockKeys,
   ],
   content: state.editorContent.value,
   onFocus: () => {

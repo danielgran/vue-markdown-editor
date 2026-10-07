@@ -114,11 +114,13 @@ editor.markdownContent.value = "## New heading\n\nFresh content.";
 
 ### Keyboard Shortcuts
 
-| Key                                | Action                                           |
-| ---------------------------------- | ------------------------------------------------ |
-| <kbd>↑</kbd> / <kbd>↓</kbd>        | Move focus between blocks                        |
-| <kbd>Enter</kbd>                   | Split current block → insert new paragraph below |
-| <kbd>Backspace</kbd> (empty block) | Delete the block, focus moves up                 |
+| Key                                  | Action                                                       |
+| ------------------------------------ | ------------------------------------------------------------ |
+| <kbd>↑</kbd> / <kbd>↓</kbd>          | Move focus between blocks                                    |
+| <kbd>Enter</kbd>                     | Split the block at the caret, the rest continues below (a headline continues as a paragraph) |
+| <kbd>Enter</kbd> (caret at start)    | Insert an empty block above, the caret stays in the block    |
+| <kbd>Backspace</kbd> (caret at start) | Merge the block into the text block above, caret at the join |
+| <kbd>Backspace</kbd> (empty block)   | Delete the block, focus moves up                             |
 | <kbd>Delete</kbd> (empty block)    | Delete the block, focus stays at same index      |
 | Click blank area                   | Append a new empty paragraph at the bottom       |
 

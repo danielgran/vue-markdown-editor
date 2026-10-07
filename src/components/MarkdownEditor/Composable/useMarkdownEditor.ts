@@ -4,8 +4,10 @@ import useMarkdownProcessor from "./useMarkdownProcessor";
 export function useMarkdownEditor(initialContent: string = "") {
   const markdownContent = ref<string>(initialContent);
 
-  const { markdownNodes, deleteNode, addBlankNode, addNodeWithType, replaceNodeType, moveNode, splitListNode }
-    = useMarkdownProcessor(markdownContent as ModelRef<string | undefined>);
+  const {
+    markdownNodes, deleteNode, addBlankNode, addNodeWithType, replaceNodeType, moveNode,
+    splitListNode, splitTextNode, mergeTextNodeIntoPrevious,
+  } = useMarkdownProcessor(markdownContent as ModelRef<string | undefined>);
 
   return {
     markdownContent,
@@ -16,6 +18,8 @@ export function useMarkdownEditor(initialContent: string = "") {
     replaceNodeType,
     moveNode,
     splitListNode,
+    splitTextNode,
+    mergeTextNodeIntoPrevious,
   };
 }
 

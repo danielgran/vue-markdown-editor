@@ -22,6 +22,14 @@ export type TextishNodeType
     | MarkdownNodeType.BLOCKQUOTE
     | MarkdownNodeType.ORDERED_LIST;
 
+export function isHeadlineNodeType(type: MarkdownNodeType): boolean {
+  return (
+    type === MarkdownNodeType.HEADLINE1
+    || type === MarkdownNodeType.HEADLINE2
+    || type === MarkdownNodeType.HEADLINE3
+  );
+}
+
 export function isTextNodeType(type: MarkdownNodeType): type is TextishNodeType {
   return (
     type === MarkdownNodeType.PARAGRAPH
