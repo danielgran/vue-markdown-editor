@@ -140,7 +140,7 @@ Type `/` at the start of a text block (paragraph, heading or quote) to open a fi
 
 The menu never inserts text of its own: it converts the block you are in into the picked type and consumes the `/…` query, so the slash trigger never ends up in the serialized Markdown.
 
-The menu is anchored to the block it was opened in, so it stays below that block while the page scrolls or the window is resized. The context menus (block, image, file and text selection) share the same anchoring, which is what keeps them attached to their block or selection.
+The menu is anchored to the block it was opened in, so it stays below that block while the page scrolls or the window is resized. The context menus (block, image, file and text selection) share the same anchoring, which is what keeps them attached to their block or selection. Near the edges of the viewport a menu mirrors to the other side of its block and is nudged inwards instead of being cut off.
 
 **Extending the menu.** The menu is data-driven. Pass your own `slashCommands` list to add, remove or reorder entries — for example to expose a custom block type you registered in the component registry:
 
