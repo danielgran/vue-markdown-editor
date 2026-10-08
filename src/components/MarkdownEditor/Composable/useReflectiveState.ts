@@ -6,7 +6,7 @@ import {
   nextTick, ref, type ModelRef, type Ref,
 } from "vue";
 import type MarkdownModuleTextState from "../Modules/MarkdownModuleTextState";
-import { TextBlockKeys } from "../TipTap/TextBlockKeys";
+import { BlockKeys } from "../TipTap/BlockKeys";
 import type { TextishEmitFunction } from "../Types/TextishEmits";
 import { detectBlockTypeFromContent } from "./HeadlineTypeMap";
 import { useMarkdownModuleContext } from "./markdownModuleContext";
@@ -91,17 +91,21 @@ export default function useReflectiveState<T extends MarkdownModuleTextState>(op
    * The module content before and after the caret as markdown. Deriving both
    * halves from the document keeps inline markup intact, so splitting inside a
    * bold or italic run does not cut through its markers.
+   *
+   * A selection is left out of both halves, so pressing Enter on selected text
+   * splits the block where that text was instead of keeping it.
    */
   function splitContentAtCaret(): { before: string; after: string } | null {
     const editor = options.editorRef?.value?.editor;
     if (!editor) return null;
 
-    const position = caretPosition(editor);
-    const { doc } = editor.state;
+    const { selection, doc } = editor.state;
+    const from = selection.empty ? caretPosition(editor) : selection.from;
+    const to = selection.empty ? from : selection.to;
 
     return {
-      before: htmlToMarkdown(getHTMLFromFragment(doc.slice(0, position).content, editor.schema)),
-      after: htmlToMarkdown(getHTMLFromFragment(doc.slice(position).content, editor.schema)),
+      before: htmlToMarkdown(getHTMLFromFragment(doc.slice(0, from).content, editor.schema)),
+      after: htmlToMarkdown(getHTMLFromFragment(doc.slice(to).content, editor.schema)),
     };
   }
 
@@ -115,18 +119,25 @@ export default function useReflectiveState<T extends MarkdownModuleTextState>(op
 
   /**
    * Merges the block into the text block above when Backspace is pressed at the
-   * start. Empty blocks keep falling through, so they remove themselves instead.
+   * start. Empty blocks never get here, they remove themselves instead.
    */
   function handleBackspaceAtStart(): boolean {
     const editor = options.editorRef?.value?.editor;
     if (!editor) return false;
-    if (options.modelRef.value.text === "") return false;
     if (!isCaretAtStart(editor)) return false;
 
     return moduleContext.mergeTextBlockBackward(options.modelRef.value);
   }
 
-  const textBlockKeys = TextBlockKeys({ onEnter: handleEnter, onBackspaceAtStart: handleBackspaceAtStart });
+  function handleBackspaceOnEmpty() {
+    moduleContext.removeBlock(options.modelRef.value);
+  }
+
+  const blockKeys = BlockKeys({
+    onEnter: handleEnter,
+    onBackspaceAtStart: handleBackspaceAtStart,
+    onBackspaceOnEmpty: handleBackspaceOnEmpty,
+  });
 
   function detectInlineTypeChange(markdown: string, cursorPosition: number) {
     const detected = detectBlockTypeFromContent(markdown, cursorPosition);
@@ -167,7 +178,7 @@ export default function useReflectiveState<T extends MarkdownModuleTextState>(op
     handleTipTapUpdateEvent,
     handleKeyDown,
     editorContent,
-    textBlockKeys,
+    blockKeys,
     expose: { focus },
   };
 }

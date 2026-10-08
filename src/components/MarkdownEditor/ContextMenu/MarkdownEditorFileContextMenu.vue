@@ -3,6 +3,7 @@
     ref="contextMenuRef"
     :x="x"
     :y="y"
+    :anchor="anchor"
     @mousedown.stop
     @click="$emit('click')"
   >
@@ -31,6 +32,7 @@ const contextMenuRef = ref<InstanceType<typeof MarkdownEditorContextMenu> | null
 defineProps<{
   x: number;
   y: number;
+  anchor?: HTMLElement | null;
 }>();
 
 const emit = defineEmits<{

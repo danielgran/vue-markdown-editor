@@ -5,23 +5,47 @@
 </template>
 
 <script lang="ts" setup>
+import { Document } from "@tiptap/extension-document";
 import StarterKit from "@tiptap/starter-kit";
 import { EditorContent, useEditor } from "@tiptap/vue-3";
 import { ref, watch } from "vue";
 import { activeEditor } from "../Composable/activeEditorStore";
+import { useMarkdownModuleContext } from "../Composable/markdownModuleContext";
+import { BlockKeys } from "../TipTap/BlockKeys";
 import type MarkdownModuleCodeBlockState from "./MarkdownModuleCodeBlockState";
 
 const modelValue = defineModel<MarkdownModuleCodeBlockState>({ required: true });
 
 const editorRef = ref<InstanceType<typeof EditorContent>>();
 
+const moduleContext = useMarkdownModuleContext();
+
+// The module renders exactly one fenced code block, so the editor must not hold
+// anything else either: deleting the whole code has to leave a code block behind,
+// not turn the block into a paragraph the wrapper knows nothing about.
+const CodeBlockDocument = Document.extend({ content: "codeBlock" });
+
 const editor = useEditor({
   extensions: [
+    CodeBlockDocument,
     StarterKit.configure({
+      document: false,
       heading: false,
       blockquote: false,
       horizontalRule: false,
       hardBreak: false,
+      trailingNode: false,
+      // The wrapper block owns leaving the code block, so TipTap must not insert an
+      // empty block above or below it on arrow keys or a triple Enter. Such a block
+      // stays inside the editor and would swallow the caret and any text typed after.
+      codeBlock: {
+        exitOnArrowDown: false,
+        exitOnArrowUp: false,
+        exitOnTripleEnter: false,
+      },
+    }),
+    BlockKeys({
+      onBackspaceOnEmpty: () => moduleContext.removeBlock(modelValue.value),
     }),
   ],
   content: `<pre><code>${modelValue.value.code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>`,

@@ -119,14 +119,56 @@ editor.markdownContent.value = "## New heading\n\nFresh content.";
 | <kbd>↑</kbd> / <kbd>↓</kbd>          | Move focus between blocks                                    |
 | <kbd>Enter</kbd>                     | Split the block at the caret, the rest continues below (a headline continues as a paragraph) |
 | <kbd>Enter</kbd> (caret at start)    | Insert an empty block above, the caret stays in the block    |
+| <kbd>Enter</kbd> (text selected)    | Replace the selected text with the split, the rest continues below |
 | <kbd>Backspace</kbd> (caret at start) | Merge the block into the text block above, caret at the join |
+| <kbd>Backspace</kbd> (text selected) | Delete the selected text and keep the block                  |
 | <kbd>Backspace</kbd> (empty block)   | Delete the block, focus moves up                             |
 | <kbd>Delete</kbd> (empty block)    | Delete the block, focus stays at same index      |
+| <kbd>/</kbd> (start of a block)   | Open the slash menu to insert or convert into another block type |
+| <kbd>↑</kbd> / <kbd>↓</kbd> (menu open) | Move the highlight in the slash menu                    |
+| <kbd>Enter</kbd> / <kbd>Tab</kbd> (menu open) | Run the highlighted slash command             |
+| <kbd>Esc</kbd> (menu open)         | Close the slash menu without converting          |
 | Click blank area                   | Append a new empty paragraph at the bottom       |
 
 #### Auto type‑detection
 
 Type `# `, `## `, or `### ` at the start of a paragraph and the block auto‑converts to the matching heading level.
+
+#### Slash commands
+
+Type `/` at the start of a text block (paragraph, heading or quote) to open a filterable menu of block types, like Notion. Keep typing to filter — both the title and a set of keywords are searched, so `/h2` and `/subtitle` both find **Heading 2**. Use <kbd>↑</kbd>/<kbd>↓</kbd> to move the highlight, then <kbd>Enter</kbd>, <kbd>Tab</kbd> or a click to convert the current block.
+
+The menu never inserts text of its own: it converts the block you are in into the picked type and consumes the `/…` query, so the slash trigger never ends up in the serialized Markdown.
+
+The menu is anchored to the block it was opened in, so it stays below that block while the page scrolls or the window is resized. The context menus (block, image, file and text selection) share the same anchoring, which is what keeps them attached to their block or selection.
+
+**Extending the menu.** The menu is data-driven. Pass your own `slashCommands` list to add, remove or reorder entries — for example to expose a custom block type you registered in the component registry:
+
+```vue
+<script setup lang="ts">
+import {
+  MarkdownEditor,
+  MarkdownAstNodeType,
+  useMarkdownEditor,
+  type SlashCommand,
+} from "@grandaniel/vue-markdown-editor";
+
+const editor = useMarkdownEditor("");
+
+const slashCommands: SlashCommand[] = [
+  { id: "paragraph", title: "Text", type: MarkdownAstNodeType.PARAGRAPH },
+  { id: "heading2", title: "Heading 2", keywords: ["h2"], type: MarkdownAstNodeType.HEADLINE2 },
+  // Any other registered block type works the same way.
+  { id: "divider", title: "Divider", type: MarkdownAstNodeType.HR },
+];
+</script>
+
+<template>
+  <MarkdownEditor :editor="editor" :slash-commands="slashCommands" />
+</template>
+```
+
+Each entry needs a unique `id`, a `title`, and the `type` to convert into. `description`, `icon` and `keywords` are optional and only affect how the entry is rendered and searched. Set `:enable-slash-commands="false"` to turn the menu off entirely.
 
 ---
 
@@ -147,7 +189,7 @@ The editor splits Markdown into **block modules** — every module is its own dr
 | Image         | `"""MarkdownModuleImage…"""` | src / alt / caption via a modal              |
 | File          | `"""MarkdownModuleFile…"""`  | Downloadable attachment                      |
 
-Most blocks are parsed from **standard Markdown** — paste a Markdown document and it is split into blocks automatically. Headings also convert on the fly: type `# `, `## `, or `### ` at the start of a paragraph, or type `> `, `1. `, a code fence, or `---` for the matching non-heading block.
+Most blocks are parsed from **standard Markdown** — paste a Markdown document and it is split into blocks automatically. Headings also convert on the fly: type `# `, `## `, or `### ` at the start of a paragraph, or type `> `, `1. `, a code fence, or `---` for the matching non-heading block. Prefer picking from a list? Type `/` at the start of a text block to open the [slash menu](#slash-commands).
 
 The special `"""…"""` blocks carry extra metadata and are used for images and files. Here is the exact Markdown the editor accepts and produces for every module:
 
@@ -255,6 +297,8 @@ Returns a reactive editor instance:
 | `editor`              | `MarkdownEditorInstance`          | ✓        | Instance from `useMarkdownEditor()`. |
 | `focusedNode`         | `MarkdownAstNode \| null`         | —        | For `v-model:focused-node` tracking. |
 | `imageUploadFunction` | `(file: File) => Promise<string>` | —        | Async callback for paste‑to‑upload.  |
+| `enableSlashCommands` | `boolean`                         | —        | Show the `/` menu. Defaults to `true`. |
+| `slashCommands`       | `SlashCommand[]`                  | —        | Entries of the `/` menu. Defaults to the built‑in `defaultSlashCommands`. |
 
 #### `MarkdownEditor` emits
 

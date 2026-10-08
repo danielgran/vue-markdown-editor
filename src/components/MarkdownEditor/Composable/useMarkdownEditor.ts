@@ -6,7 +6,7 @@ export function useMarkdownEditor(initialContent: string = "") {
 
   const {
     markdownNodes, deleteNode, addBlankNode, addNodeWithType, replaceNodeType, moveNode,
-    splitListNode, splitTextNode, mergeTextNodeIntoPrevious,
+    splitListNode, updateTextNode, splitTextNode, mergeTextNodeIntoPrevious,
   } = useMarkdownProcessor(markdownContent as ModelRef<string | undefined>);
 
   return {
@@ -18,6 +18,7 @@ export function useMarkdownEditor(initialContent: string = "") {
     replaceNodeType,
     moveNode,
     splitListNode,
+    updateTextNode,
     splitTextNode,
     mergeTextNodeIntoPrevious,
   };

@@ -3,6 +3,7 @@
     v-if="isVisible"
     :x="anchorX"
     :y="anchorY"
+    :anchor="anchorEl"
     placement="above"
   >
     <MarkdownEditorContextMenuInlineItem
@@ -34,7 +35,7 @@ import useTextSelectionMenu from "../Composable/useTextSelectionMenu";
 import MarkdownEditorContextMenu from "./MarkdownEditorContextMenu.vue";
 import MarkdownEditorContextMenuInlineItem from "./MarkdownEditorContextMenuInlineItem.vue";
 
-const { isVisible, anchorX, anchorY, activeStates, hide } = useTextSelectionMenu();
+const { isVisible, anchorX, anchorY, anchorEl, activeStates, hide } = useTextSelectionMenu();
 
 function toggleFormat(command: "bold" | "italic" | "underline") {
   const editor = activeEditor.value!;

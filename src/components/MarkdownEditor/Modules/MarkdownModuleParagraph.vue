@@ -44,7 +44,7 @@ const editor = useEditor({
       orderedList: false,
       listItem: false,
     }),
-    state.textBlockKeys,
+    state.blockKeys,
   ],
   content: state.editorContent.value,
   onFocus: () => {

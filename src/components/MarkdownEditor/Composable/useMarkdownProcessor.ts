@@ -93,6 +93,20 @@ function useMarkdownProcessor(modelValue: ModelRef<string | undefined>) {
    * into a new node right after it. A headline continues as a paragraph, like
    * Notion, every other block keeps its own type. Returns the new node index.
    */
+  /**
+   * Rewrites the content of a text node. Replacing the node remounts its module,
+   * which is what lets a module pick up content the editor dropped from its own
+   * document (the text an Enter deleted) — so nothing happens when it is unchanged.
+   */
+  function updateTextNode(node: MarkdownAstNode, text: string): void {
+    const nodeIndex = markdownNodes.value.indexOf(node);
+    if (nodeIndex === -1) return;
+    if (!isTextNodeState(node) || !isTextNodeType(node.type)) return;
+    if (node.componentState.text === text) return;
+
+    markdownNodes.value.splice(nodeIndex, 1, MarkdownNodeFactory.createTextNode(node.type, text));
+  }
+
   function splitTextNode(node: MarkdownAstNode, before: string, after: string): number | null {
     const nodeIndex = markdownNodes.value.indexOf(node);
     if (nodeIndex === -1) return null;
@@ -200,17 +214,23 @@ function useMarkdownProcessor(modelValue: ModelRef<string | undefined>) {
     throw new Error(`Unsupported node type: ${newType}`);
   }
 
+  /**
+   * Converts a block into `newType`. Without an explicit `text` the current
+   * content is kept, which makes converting into the node's own type a no-op;
+   * passing a text replaces the content (e.g. to drop a slash command trigger).
+   */
   function replaceNodeType(
     node: MarkdownAstNode,
     newType: MarkdownNodeType,
+    text?: string,
   ): { newNode: MarkdownAstNode; index: number } | null {
     // If the node is already of the desired type, do nothing
-    if (node.type === newType) return null;
+    if (text === undefined && node.type === newType) return null;
 
     const nodeIndex = markdownNodes.value.indexOf(node);
     if (nodeIndex === -1) return null;
 
-    const currentText = isTextNodeState(node) ? node.componentState.text : "";
+    const currentText = text ?? (isTextNodeState(node) ? node.componentState.text : "");
     const newNode = createNodeWithType(currentText, newType);
 
     markdownNodes.value.splice(nodeIndex, 1, newNode);
@@ -231,6 +251,7 @@ function useMarkdownProcessor(modelValue: ModelRef<string | undefined>) {
     replaceNodeType,
     moveNode,
     splitListNode,
+    updateTextNode,
     splitTextNode,
     mergeTextNodeIntoPrevious,
   };

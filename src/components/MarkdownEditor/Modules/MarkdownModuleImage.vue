@@ -15,6 +15,7 @@
       ref="contextMenuRef"
       :x="contextMenuPosition.x"
       :y="contextMenuPosition.y"
+      :anchor="divRef ?? null"
       @edit-attributes="openAttributesModal"
       @close="() => showContextMenu = false"
     />
@@ -67,7 +68,7 @@ import MarkdownEditorImageContextMenu from "../ContextMenu/MarkdownEditorImageCo
 import MarkdownEditorModal from "../MarkdownEditorModal.vue";
 import type MarkdownModuleImageState from "./MarkdownModuleImageState";
 
-const divRef = ref<HTMLDivElement>();
+const divRef = ref<HTMLDivElement | null>(null);
 
 const modelValue = defineModel<MarkdownModuleImageState>({
   required: true,

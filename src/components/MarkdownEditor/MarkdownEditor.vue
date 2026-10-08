@@ -3,6 +3,7 @@
     ref="editorContainerRef"
     class="markdown-editor"
     @click="handleClickBlankArea"
+    @keydown.capture="handleSlashMenuKeydown"
   >
     <template v-if="markdownNodes.length > 0">
       <MarkdownEditorModule
@@ -36,15 +37,26 @@
       </p>
     </template>
     <MarkdownEditorTextSelectionContextMenu />
+    <MarkdownEditorSlashMenu
+      v-if="slashMenuVisible"
+      :items="slashMenuItems"
+      :active-index="slashMenuActiveIndex"
+      :x="slashMenuAnchorX"
+      :y="slashMenuAnchorY"
+      :anchor="slashMenuAnchor"
+      @select="applySlashCommand"
+      @update:active-index="setSlashActiveIndex"
+    />
   </div>
 </template>
 
 <script lang="ts" setup>
 import { useSortable } from "@vueuse/integrations/useSortable";
 import {
-  nextTick, onMounted, ref, useTemplateRef, type PropType,
+  computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch, type PropType,
 } from "vue";
 import { provideMarkdownModuleContext } from "./Composable/markdownModuleContext";
+import useSlashMenu from "./Composable/useSlashMenu";
 import { renderedTextLength } from "./Composable/useReflectiveState";
 import type { MarkdownEditorInstance } from "./Composable/useMarkdownEditor";
 import MarkdownEditorTextSelectionContextMenu from "./ContextMenu/MarkdownEditorTextSelectionContextMenu.vue";
@@ -52,6 +64,10 @@ import MarkdownEditorFocusControls from "./MarkdownEditorFocusControls.vue";
 import { isTextNodeState as isTextishNode } from "./MarkdownComponentRegistry";
 import MarkdownEditorModule from "./MarkdownEditorModule.vue";
 import type MarkdownModuleFileState from "./Modules/MarkdownModuleFileState";
+import MarkdownEditorSlashMenu from "./SlashMenu/MarkdownEditorSlashMenu.vue";
+import {
+  defaultSlashCommands, type SlashCommand,
+} from "./SlashMenu/slashCommands";
 import type { MarkdownAstNode } from "./Types/MarkdownAstNode";
 import MarkdownNodeType from "./Types/MarkdownAstNodeType";
 
@@ -75,6 +91,16 @@ const props = defineProps({
     required: false,
     default: undefined,
   },
+  enableSlashCommands: {
+    type: Boolean,
+    required: false,
+    default: true,
+  },
+  slashCommands: {
+    type: Array as PropType<SlashCommand[]>,
+    required: false,
+    default: () => [...defaultSlashCommands],
+  },
 });
 
 const emit = defineEmits<{
@@ -83,7 +109,7 @@ const emit = defineEmits<{
 
 const {
   markdownNodes, deleteNode, addBlankNode, addNodeWithType, replaceNodeType, splitListNode,
-  splitTextNode, mergeTextNodeIntoPrevious,
+  updateTextNode, splitTextNode, mergeTextNodeIntoPrevious,
 } = props.editor;
 
 const editorContainerRef = useTemplateRef("editorContainerRef");
@@ -92,6 +118,94 @@ useSortable(() => editorContainerRef.value, markdownNodes, {
   animation: 150,
 });
 const focusedNode = ref<MarkdownAstNode | null>(props.focusedNode);
+
+const {
+  isVisible: slashMenuVisible,
+  items: slashMenuItems,
+  activeIndex: slashMenuActiveIndex,
+  anchorX: slashMenuAnchorX,
+  anchorY: slashMenuAnchorY,
+  open: openSlashMenu,
+  close: closeSlashMenu,
+  setActiveIndex: setSlashActiveIndex,
+  handleKeydown: handleSlashMenuKey,
+} = useSlashMenu({
+  commands: () => props.slashCommands,
+  onSelect: applySlashCommand,
+});
+
+/** Block content the menu is anchored to, so it follows the block while scrolling. */
+const slashMenuAnchor = ref<HTMLElement | null>(null);
+
+/** The text after a leading `/`, or null when the focused block cannot host the menu. */
+const slashQuery = computed(() => {
+  const node = focusedNode.value;
+  if (!node || !isTextishNode(node)) return null;
+
+  const { text } = node.componentState;
+  return text.startsWith("/") ? text.slice(1) : null;
+});
+
+watch([focusedNode, slashQuery], () => syncSlashMenu());
+
+function syncSlashMenu() {
+  const query = slashQuery.value;
+  if (!props.enableSlashCommands || query === null) {
+    closeSlashMenu();
+    return;
+  }
+
+  slashMenuAnchor.value = resolveSlashAnchorElement();
+  openSlashMenu(query, resolveSlashAnchorPoint());
+}
+
+/** The focused block's content, which the menu stays attached to while scrolling. */
+function resolveSlashAnchorElement(): HTMLElement | null {
+  const node = focusedNode.value;
+  const nodeIndex = node ? markdownNodes.value.indexOf(node) : -1;
+  const contents = editorContainerRef.value?.querySelectorAll<HTMLElement>(".markdown-editor-module-content");
+
+  return nodeIndex >= 0 ? contents?.[nodeIndex] ?? null : null;
+}
+
+/** Puts the menu under the focused block, right of the drag-handle column. */
+function resolveSlashAnchorPoint(): { x: number; y: number } {
+  const rect = slashMenuAnchor.value?.getBoundingClientRect();
+
+  return rect ? { x: rect.left, y: rect.bottom + 4 } : { x: 0, y: 0 };
+}
+
+/** Converts the current block, dropping the `/query` text it was opened with. */
+function applySlashCommand(command: SlashCommand) {
+  const node = focusedNode.value;
+  closeSlashMenu();
+
+  if (!node || !isTextishNode(node)) return;
+
+  const result = replaceNodeType(node, command.type, "");
+  if (result) focusNodeByIndex(result.index);
+}
+
+function handleSlashMenuKeydown(event: KeyboardEvent) {
+  if (!slashMenuVisible.value) return;
+  if (!handleSlashMenuKey(event)) return;
+
+  // The menu owns these keys, the block editor must not react to them.
+  event.preventDefault();
+  event.stopPropagation();
+}
+
+function handleDocumentMouseDown(event: MouseEvent) {
+  if (!slashMenuVisible.value) return;
+
+  const target = event.target as HTMLElement | null;
+  if (target?.closest(".markdown-editor-slash-menu")) return;
+  // Clicks inside the editor are left to the focus tracking, which closes the
+  // menu only when the caret actually moves into another block.
+  if (target?.closest(".markdown-editor")) return;
+
+  closeSlashMenu();
+}
 
 function handleUpdateCursorPosition(node: MarkdownAstNode, position: number) {
   node.editingState.cursorPosition = position;
@@ -133,14 +247,15 @@ provideMarkdownModuleContext({
 
     // Enter at the end of the text continues writing in a new module below.
     if (after === "") {
-      addBlankNode(nodeIndex);
-      moveFocusOneDown();
+      updateTextNode(node, before);
+      focusNodeByIndex(addBlankNode(nodeIndex));
       return;
     }
 
     // Enter on the first character opens an empty module above, leaving the caret
     // in the text so typing continues where the user was.
     if (before === "") {
+      updateTextNode(node, after);
       addBlankNode(nodeIndex - 1);
       focusNodeByIndex(nodeIndex + 1);
       return;
@@ -163,6 +278,17 @@ provideMarkdownModuleContext({
     focusNodeByIndex(merged.index);
     return true;
   },
+  removeBlock: (state) => {
+    const index = markdownNodes.value.findIndex(candidate => candidate.componentState === state);
+    if (index === -1) return;
+
+    deleteNode(index);
+
+    nextTick(() => {
+      const newIndex = index > 0 ? index - 1 : 0;
+      focusNodeByIndex(newIndex);
+    });
+  },
 });
 
 function handleKeyDownOnNode(node: MarkdownAstNode, event: KeyboardEvent) {
@@ -172,8 +298,6 @@ function handleKeyDownOnNode(node: MarkdownAstNode, event: KeyboardEvent) {
     if (node.type !== MarkdownNodeType.LIST) {
       handleEnter(nodeIndex, event);
     }
-  } else if (event.key === "Backspace") {
-    handleBackspace(nodeIndex);
   } else if (event.key === "ArrowUp") {
     moveFocusOneUp();
     event.preventDefault();
@@ -194,20 +318,6 @@ function handleEnter(nodeIndex: number, event: KeyboardEvent) {
   addBlankNode(nodeIndex);
   moveFocusOneDown();
   event.preventDefault();
-}
-
-function handleBackspace(index: number) {
-  const node = getNodeByIndex(index);
-
-  if (!isTextishNode(node)) return;
-  if (node.componentState.text !== "") return;
-
-  deleteNode(index);
-
-  nextTick(() => {
-    const newIndex = index > 0 ? index - 1 : 0;
-    focusNodeByIndex(newIndex);
-  });
 }
 
 function handleDelete(index: number) {
@@ -342,6 +452,11 @@ function moveFocusOneDown() {
 
 onMounted(() => {
   document.addEventListener("paste", handlePaste);
+  document.addEventListener("mousedown", handleDocumentMouseDown);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("mousedown", handleDocumentMouseDown);
 });
 
 </script>

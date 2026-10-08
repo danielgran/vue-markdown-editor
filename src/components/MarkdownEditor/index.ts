@@ -19,3 +19,7 @@ export { default as MarkdownModuleTableState } from "./Modules/MarkdownModuleTab
 export { default as MarkdownModuleImageState } from "./Modules/MarkdownModuleImageState";
 export { default as MarkdownModuleListState } from "./Modules/MarkdownModuleListState";
 export { default as MarkdownModuleTextState } from "./Modules/MarkdownModuleTextState";
+export { default as MarkdownEditorSlashMenu } from "./SlashMenu/MarkdownEditorSlashMenu.vue";
+export {
+  defaultSlashCommands, filterSlashCommands, type SlashCommand,
+} from "./SlashMenu/slashCommands";

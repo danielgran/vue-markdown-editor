@@ -58,6 +58,7 @@
       ref="contextMenuRef"
       :x="contextMenuPosition.x"
       :y="contextMenuPosition.y"
+      :anchor="divRef ?? null"
       @edit-attributes="openAttributesModal"
       @download="handleDownload"
       @retry="handleRetry"
@@ -101,7 +102,7 @@ import MarkdownEditorFileContextMenu from "../ContextMenu/MarkdownEditorFileCont
 import MarkdownEditorModal from "../MarkdownEditorModal.vue";
 import type MarkdownModuleFileState from "./MarkdownModuleFileState";
 
-const divRef = ref<HTMLDivElement>();
+const divRef = ref<HTMLDivElement | null>(null);
 
 const modelValue = defineModel<MarkdownModuleFileState>({
   required: true,

@@ -48,7 +48,7 @@ const editor = useEditor({
         },
       },
     }),
-    state.textBlockKeys,
+    state.blockKeys,
   ],
   content: state.editorContent.value,
   onFocus: () => {

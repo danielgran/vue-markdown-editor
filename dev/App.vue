@@ -86,6 +86,7 @@ Each block type has its own editor — headlines use single-line heading inputs,
 - Images support editing src, alt, and caption via a modal
 - Paste an image or a file to upload it as a block
 - Type a leading prefix to convert a paragraph: # / ## / ###, >, 1., ${fence} or ---
+- Type "/" at the start of a block to open the slash menu and pick a block type
 
 ## Lists
 

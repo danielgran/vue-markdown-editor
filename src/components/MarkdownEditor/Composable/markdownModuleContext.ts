@@ -25,6 +25,11 @@ export interface MarkdownModuleContext {
    * keeps its type and takes over the text. Returns whether it merged.
    */
   mergeTextBlockBackward: (state: object) => boolean;
+  /**
+   * Removes the block that owns `state` and focuses the block above. A block asks
+   * for this when Backspace is pressed in it while it has no content.
+   */
+  removeBlock: (state: object) => void;
 }
 
 const markdownModuleContextKey: InjectionKey<MarkdownModuleContext> = Symbol("markdownModuleContext");
@@ -35,6 +40,7 @@ const inertMarkdownModuleContext: MarkdownModuleContext = {
   closeList: () => {},
   splitTextBlock: () => {},
   mergeTextBlockBackward: () => false,
+  removeBlock: () => {},
 };
 
 export function provideMarkdownModuleContext(context: MarkdownModuleContext) {
