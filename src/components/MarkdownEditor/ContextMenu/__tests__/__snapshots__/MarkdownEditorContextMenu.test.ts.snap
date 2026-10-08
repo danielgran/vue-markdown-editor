@@ -40,7 +40,7 @@ exports[`MarkdownEditorContextMenu > slot content > renders default slot content
   <div
     class="markdown-editor-context-menu"
     data-v-b71240c5=""
-    style="left: 0px; top: 0px;"
+    style="left: 8px; top: 0px;"
   >
     
     <span>
