@@ -1,21 +1,13 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`MarkdownModuleList > rendering > renders correctly with empty items 1`] = `
-<div
+<editor-content-stub
   data-v-c4da493f=""
->
-  <editor-content-stub
-    data-v-c4da493f=""
-  />
-</div>
+/>
 `;
 
 exports[`MarkdownModuleList > rendering > renders correctly with items 1`] = `
-<div
+<editor-content-stub
   data-v-c4da493f=""
->
-  <editor-content-stub
-    data-v-c4da493f=""
-  />
-</div>
+/>
 `;

@@ -26,7 +26,7 @@
           :class="{ copied: copySuccess }"
           @click="copyToClipboard"
         >
-          {{ copySuccess ? '✓ Copied!' : '📋 Copy' }}
+          {{ copySuccess ? "✓ Copied!" : "📋 Copy" }}
         </button>
       </div>
       <pre v-if="activeTab === 'raw'">{{ editor.markdownContent.value }}</pre>

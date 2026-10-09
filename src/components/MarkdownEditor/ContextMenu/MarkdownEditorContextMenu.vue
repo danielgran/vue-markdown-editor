@@ -10,9 +10,9 @@
   </Teleport>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import { ref, toRef } from "vue";
-import useFloatingPosition, { type FloatingPlacement } from "../Composable/useFloatingPosition";
+import useFloatingPosition, { type FloatingPlacement } from "@/components/MarkdownEditor/Composable/useFloatingPosition";
 
 defineOptions({ inheritAttrs: false });
 

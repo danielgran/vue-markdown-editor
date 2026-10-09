@@ -55,21 +55,21 @@ import { useSortable } from "@vueuse/integrations/useSortable";
 import {
   computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch, type PropType,
 } from "vue";
-import { provideMarkdownModuleContext } from "./Composable/markdownModuleContext";
-import useSlashMenu from "./Composable/useSlashMenu";
-import { renderedTextLength } from "./Composable/useReflectiveState";
-import type { MarkdownEditorInstance } from "./Composable/useMarkdownEditor";
-import MarkdownEditorTextSelectionContextMenu from "./ContextMenu/MarkdownEditorTextSelectionContextMenu.vue";
-import MarkdownEditorFocusControls from "./MarkdownEditorFocusControls.vue";
-import { isTextNodeState as isTextishNode } from "./MarkdownComponentRegistry";
-import MarkdownEditorModule from "./MarkdownEditorModule.vue";
-import type MarkdownModuleFileState from "./Modules/MarkdownModuleFileState";
-import MarkdownEditorSlashMenu from "./SlashMenu/MarkdownEditorSlashMenu.vue";
+import { provideMarkdownModuleContext } from "@/components/MarkdownEditor/Composable/markdownModuleContext";
+import useSlashMenu from "@/components/MarkdownEditor/Composable/useSlashMenu";
+import { renderedTextLength } from "@/components/MarkdownEditor/Composable/useReflectiveState";
+import type { MarkdownEditorInstance } from "@/components/MarkdownEditor/Composable/useMarkdownEditor";
+import MarkdownEditorTextSelectionContextMenu from "@/components/MarkdownEditor/ContextMenu/MarkdownEditorTextSelectionContextMenu.vue";
+import MarkdownEditorFocusControls from "@/components/MarkdownEditor/MarkdownEditorFocusControls.vue";
+import { isTextNodeState as isTextishNode } from "@/components/MarkdownEditor/MarkdownComponentRegistry";
+import MarkdownEditorModule from "@/components/MarkdownEditor/MarkdownEditorModule.vue";
+import type MarkdownModuleFileState from "@/components/MarkdownEditor/Modules/MarkdownModuleFileState";
+import MarkdownEditorSlashMenu from "@/components/MarkdownEditor/SlashMenu/MarkdownEditorSlashMenu.vue";
 import {
   defaultSlashCommands, type SlashCommand,
-} from "./SlashMenu/slashCommands";
-import type { MarkdownAstNode } from "./Types/MarkdownAstNode";
-import MarkdownNodeType from "./Types/MarkdownAstNodeType";
+} from "@/components/MarkdownEditor/SlashMenu/slashCommands";
+import type { MarkdownAstNode } from "@/components/MarkdownEditor/Types/MarkdownAstNode";
+import MarkdownNodeType from "@/components/MarkdownEditor/Types/MarkdownAstNodeType";
 
 const props = defineProps({
   editor: {
@@ -367,7 +367,6 @@ async function handlePaste(event: ClipboardEvent) {
     }
   }
 
-  // Handle non-image file paste
   for (const item of items) {
     if (item.kind === "file" && !item.type.startsWith("image/")) {
       const file = item.getAsFile();
@@ -389,7 +388,6 @@ async function handlePaste(event: ClipboardEvent) {
           focusedNode.value = getNodeByIndex(newNodeIndex);
         });
 
-        // Upload and update the node
         await props.fileUploadFunction(file).then((url) => {
           const node = getNodeByIndex(newNodeIndex);
           if (node && node.type === MarkdownNodeType.FILE) {

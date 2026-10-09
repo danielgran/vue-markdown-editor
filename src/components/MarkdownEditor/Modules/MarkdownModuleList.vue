@@ -1,13 +1,14 @@
 <template>
-  <div @keydown.enter.stop>
-    <EditorContent :editor="editor" />
-  </div>
+  <EditorContent
+    :editor="editor"
+    @keydown.enter.stop
+  />
 </template>
 
 <script lang="ts" setup>
 import { EditorContent } from "@tiptap/vue-3";
-import { useListModule } from "../Composable/useListModule";
-import type MarkdownModuleListState from "./MarkdownModuleListState";
+import { useListModule } from "@/components/MarkdownEditor/Composable/useListModule";
+import type MarkdownModuleListState from "@/components/MarkdownEditor/Modules/MarkdownModuleListState";
 
 const modelValue = defineModel<MarkdownModuleListState>({ required: true });
 

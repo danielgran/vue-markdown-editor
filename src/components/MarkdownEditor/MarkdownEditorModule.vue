@@ -34,10 +34,10 @@ import { useFocusWithin } from "@vueuse/core";
 import {
   onMounted, ref, useTemplateRef, watch, type PropType,
 } from "vue";
-import type { MarkdownAstNode } from "./Types/MarkdownAstNode";
+import type { MarkdownAstNode } from "@/components/MarkdownEditor/Types/MarkdownAstNode";
 
-import ComponentRegistry from "./MarkdownComponentRegistry";
-import type MarkdownAstNodeType from "./Types/MarkdownAstNodeType";
+import ComponentRegistry from "@/components/MarkdownEditor/MarkdownComponentRegistry";
+import type MarkdownAstNodeType from "@/components/MarkdownEditor/Types/MarkdownAstNodeType";
 
 const props = defineProps({
   node: {
@@ -81,12 +81,10 @@ const contentRef = useTemplateRef("contentRef");
 const moduleComponentRef = ref<{ focus: (cursorPosition?: number) => void } | null>(null);
 const innerElementFocus = useFocusWithin(contentRef);
 
-// Handle external focus changes
 watch(() => props.focused, (nowFocused) => {
   if (nowFocused) focusModule();
 });
 
-// Focus detection root
 watch(innerElementFocus.focused, (isFocused) => {
   if (isFocused) {
     emit("focus");

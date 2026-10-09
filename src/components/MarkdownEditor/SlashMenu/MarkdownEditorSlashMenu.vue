@@ -32,10 +32,10 @@
   </Teleport>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import { ref, toRef } from "vue";
-import useFloatingPosition from "../Composable/useFloatingPosition";
-import type { SlashCommand } from "./slashCommands";
+import useFloatingPosition from "@/components/MarkdownEditor/Composable/useFloatingPosition";
+import type { SlashCommand } from "@/components/MarkdownEditor/SlashMenu/slashCommands";
 
 const props = defineProps<{
   items: SlashCommand[];

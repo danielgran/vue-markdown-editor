@@ -1,7 +1,8 @@
 <template>
-  <div @keydown.enter.stop>
-    <EditorContent :editor="editor" />
-  </div>
+  <EditorContent
+    :editor="editor"
+    @keydown.enter.stop
+  />
 </template>
 
 <script lang="ts" setup>
@@ -9,10 +10,10 @@ import { Document } from "@tiptap/extension-document";
 import StarterKit from "@tiptap/starter-kit";
 import { EditorContent, useEditor } from "@tiptap/vue-3";
 import { ref, watch } from "vue";
-import { activeEditor } from "../Composable/activeEditorStore";
-import { useMarkdownModuleContext } from "../Composable/markdownModuleContext";
-import { BlockKeys } from "../TipTap/BlockKeys";
-import type MarkdownModuleCodeBlockState from "./MarkdownModuleCodeBlockState";
+import { activeEditor } from "@/components/MarkdownEditor/Composable/activeEditorStore";
+import { useMarkdownModuleContext } from "@/components/MarkdownEditor/Composable/markdownModuleContext";
+import { BlockKeys } from "@/components/MarkdownEditor/TipTap/BlockKeys";
+import type MarkdownModuleCodeBlockState from "@/components/MarkdownEditor/Modules/MarkdownModuleCodeBlockState";
 
 const modelValue = defineModel<MarkdownModuleCodeBlockState>({ required: true });
 

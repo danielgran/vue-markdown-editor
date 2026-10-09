@@ -10,7 +10,7 @@
 </template>
 
 <script lang="ts" setup>
-import type MarkdownModuleImageState from "../../MarkdownEditor/Modules/MarkdownModuleImageState";
+import type MarkdownModuleImageState from "@/components/MarkdownEditor/Modules/MarkdownModuleImageState";
 
 defineProps<{ state: MarkdownModuleImageState }>();
 </script>

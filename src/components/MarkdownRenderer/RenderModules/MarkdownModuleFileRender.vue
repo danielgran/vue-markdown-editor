@@ -16,7 +16,7 @@
 
 <script lang="ts" setup>
 import { computed } from "vue";
-import type MarkdownModuleFileState from "../../MarkdownEditor/Modules/MarkdownModuleFileState";
+import type MarkdownModuleFileState from "@/components/MarkdownEditor/Modules/MarkdownModuleFileState";
 
 const props = defineProps<{ state: MarkdownModuleFileState }>();
 
@@ -68,38 +68,38 @@ const formattedFileSize = computed(() => {
   border: 1px solid #e5e7eb;
   border-radius: 0.5rem;
   background: #f9fafb;
-}
 
-.markdown-module-file-render-icon {
-  font-size: 1.5rem;
-  flex-shrink: 0;
-  line-height: 1;
-}
-
-.markdown-module-file-render-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-  min-width: 0;
-}
-
-.markdown-module-file-render-name {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #111827;
-  text-decoration: none;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-
-  &:hover {
-    color: #3b82f6;
-    text-decoration: underline;
+  .markdown-module-file-render-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    line-height: 1;
   }
-}
 
-.markdown-module-file-render-size {
-  font-size: 0.75rem;
-  color: #6b7280;
+  .markdown-module-file-render-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-width: 0;
+  }
+
+  .markdown-module-file-render-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #111827;
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &:hover {
+      color: #3b82f6;
+      text-decoration: underline;
+    }
+  }
+
+  .markdown-module-file-render-size {
+    font-size: 0.75rem;
+    color: #6b7280;
+  }
 }
 </style>

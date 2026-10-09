@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts" setup>
-import type MarkdownModuleCodeBlockState from "../../MarkdownEditor/Modules/MarkdownModuleCodeBlockState";
+import type MarkdownModuleCodeBlockState from "@/components/MarkdownEditor/Modules/MarkdownModuleCodeBlockState";
 
 defineProps<{ state: MarkdownModuleCodeBlockState }>();
 </script>

@@ -28,7 +28,7 @@
 
 <script lang="ts" setup>
 import { marked } from "marked";
-import type MarkdownModuleTableState from "../../MarkdownEditor/Modules/MarkdownModuleTableState";
+import type MarkdownModuleTableState from "@/components/MarkdownEditor/Modules/MarkdownModuleTableState";
 
 defineProps<{ state: MarkdownModuleTableState }>();
 
