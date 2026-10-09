@@ -52,6 +52,7 @@
     "lint:fix": "eslint --fix",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "test:coverage": "vitest run --coverage",
     "check": "npm run lint && npm run type-check && npm run test:coverage"
   },
@@ -60,6 +61,7 @@
     "vue": "^3.5.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.0",
     "@stylistic/eslint-plugin": "^5.10.0",
     "@tsconfig/node22": "^22.0.5",
     "@types/mdast": "^4.0.4",

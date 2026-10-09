@@ -103,7 +103,7 @@ export const sharedPlugins = {
 };
 
 /** Global ignore patterns shared across projects (e.g. build output, coverage reports). */
-export const sharedIgnores = ["coverage/**", "dist/**"];
+export const sharedIgnores = ["coverage/**", "dist/**", "test-results/**", "playwright-report/**"];
 
 /** All shared rules assembled for flat config usage. */
 export const sharedRules = {

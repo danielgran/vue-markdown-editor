@@ -590,7 +590,7 @@ We welcome contributions! Please follow the guidelines below.
 
 1. **Fork** the repository and create a feature branch off `dev`.
 2. **Keep changes focused** — one feature or fix per PR.
-3. **Add tests** for any new functionality. The project uses [Vitest](https://vitest.dev/) + [`@vue/test-utils`](https://test-utils.vuejs.org/).
+3. **Add tests** for any new functionality. The project uses [Vitest](https://vitest.dev/) + [`@vue/test-utils`](https://test-utils.vuejs.org/) for component tests and [Playwright](https://playwright.dev/) for browser-level editor flows.
 4. **Run the full check** before pushing:
 
    ```bash
@@ -615,6 +615,17 @@ npm run dev
 ```
 
 The dev server launches at `http://localhost:4010`. The entry point is `dev/App.vue` — a full showcase that demonstrates every editor feature: block types, drag & drop, image upload, context menus, keyboard navigation, and Markdown output serialization. Use it as a playground while developing.
+
+### Browser tests
+
+Install the Playwright browser once, then run the end-to-end suite:
+
+```bash
+npx playwright install chromium
+npm run test:e2e
+```
+
+The suite starts the Vite showcase automatically and covers the Notion-like slash menu, keyboard navigation, block insertion, block splitting, and Markdown serialization.
 
 ---
 
