@@ -13,9 +13,9 @@
 
 <script lang="ts" setup>
 import { computed, type PropType } from "vue";
-import { parseMarkdown } from "../MarkdownEditor/Composable/parseMarkdown";
-import type { MarkdownRendererInstance } from "./Composable/useMarkdownRenderer";
-import defaultRenderComponentRegistry from "./defaultRenderComponentRegistry";
+import { parseMarkdown } from "@/components/MarkdownEditor/Composable/parseMarkdown";
+import type { MarkdownRendererInstance } from "@/components/MarkdownRenderer/Composable/useMarkdownRenderer";
+import defaultRenderComponentRegistry from "@/components/MarkdownRenderer/defaultRenderComponentRegistry";
 
 const props = defineProps({
   markdown: {

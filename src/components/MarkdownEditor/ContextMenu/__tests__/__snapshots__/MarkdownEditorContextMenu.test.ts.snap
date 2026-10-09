@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`MarkdownEditorContextMenu > placement: above > renders with transform translateY above anchor when placement is 'above' 1`] = `
+exports[`MarkdownEditorContextMenu > placement: above > renders centered above the anchor when placement is 'above' 1`] = `
 <teleport-stub
   data-v-b71240c5=""
   to="body"
@@ -8,7 +8,7 @@ exports[`MarkdownEditorContextMenu > placement: above > renders with transform t
   <div
     class="markdown-editor-context-menu"
     data-v-b71240c5=""
-    style="left: 300px; top: 150px; transform: translateX(-50%) translateY(calc(-100% - 8px));"
+    style="left: 300px; top: 142px;"
   >
     
     
@@ -40,7 +40,7 @@ exports[`MarkdownEditorContextMenu > slot content > renders default slot content
   <div
     class="markdown-editor-context-menu"
     data-v-b71240c5=""
-    style="left: 0px; top: 0px;"
+    style="left: 8px; top: 0px;"
   >
     
     <span>

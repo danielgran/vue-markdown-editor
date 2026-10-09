@@ -1,6 +1,8 @@
 import { shallowMount } from "@vue/test-utils";
 import { defineComponent, ref } from "vue";
-import { describe, expect, it, vi } from "vitest";
+import {
+  describe, expect, it, vi,
+} from "vitest";
 import { MarkdownAstNode } from "../Types/MarkdownAstNode";
 import MarkdownNodeType from "../Types/MarkdownAstNodeType";
 import MarkdownModuleTextState from "../Modules/MarkdownModuleTextState";
@@ -15,11 +17,11 @@ import MarkdownEditorModule from "../MarkdownEditorModule.vue";
 
 // Stub that exposes focus() so onMounted doesn't throw
 const FocusableComponentStub = defineComponent({
-  template: "<div data-stub=\"module-component\" />",
   setup(_, { expose }) {
     expose({ focus: vi.fn() });
     return {};
   },
+  template: "<div data-stub=\"module-component\" />",
 });
 
 function makeParagraphNode(): MarkdownAstNode {

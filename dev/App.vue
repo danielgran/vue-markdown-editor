@@ -26,11 +26,14 @@
           :class="{ copied: copySuccess }"
           @click="copyToClipboard"
         >
-          {{ copySuccess ? '✓ Copied!' : '📋 Copy' }}
+          {{ copySuccess ? "✓ Copied!" : "📋 Copy" }}
         </button>
       </div>
       <pre v-if="activeTab === 'raw'">{{ editor.markdownContent.value }}</pre>
-      <div v-else class="dev-preview">
+      <div
+        v-else
+        class="dev-preview"
+      >
         <MarkdownRenderer :markdown="editor.markdownContent.value" />
       </div>
     </aside>
@@ -43,8 +46,10 @@
           <kbd>↑</kbd>/<kbd>↓</kbd> to navigate, and drag the handle (⠿) to reorder.
         </p>
       </div>
-      <MarkdownEditor :editor="editor" :image-upload-function="handleUploadImage"
-      :file-upload-function="handleFileupload"
+      <MarkdownEditor
+        :editor="editor"
+        :image-upload-function="handleUploadImage"
+        :file-upload-function="handleFileupload"
       />
     </main>
   </div>
@@ -81,6 +86,7 @@ Each block type has its own editor — headlines use single-line heading inputs,
 - Images support editing src, alt, and caption via a modal
 - Paste an image or a file to upload it as a block
 - Type a leading prefix to convert a paragraph: # / ## / ###, >, 1., ${fence} or ---
+- Type "/" at the start of a block to open the slash menu and pick a block type
 
 ## Lists
 
@@ -167,7 +173,8 @@ Images are rendered as custom blocks with their own context menu and editing mod
 ### Keyboard Shortcuts
 
 - Arrow Up / Down to move focus between blocks
-- Enter to split a block and create a new one below
+- Enter to split a block at the caret; at the start of a block it opens an empty block above, and a split headline continues as plain text
+- Backspace at the start of a block merges it into the text block above
 - Backspace on an empty block removes it
 - Delete on an empty block removes it (focus stays at same index)`);
 

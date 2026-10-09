@@ -1,5 +1,7 @@
 import { shallowMount } from "@vue/test-utils";
-import { describe, expect, it } from "vitest";
+import {
+  describe, expect, it,
+} from "vitest";
 import MarkdownModuleHeadline1 from "../MarkdownModuleHeadline1.vue";
 import MarkdownModuleTextState from "../MarkdownModuleTextState";
 
@@ -22,4 +24,3 @@ describe("MarkdownModuleHeadline1", () => {
     expect(wrapper.element).toMatchSnapshot();
   });
 });
-

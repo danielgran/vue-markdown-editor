@@ -40,7 +40,7 @@
 
 <script lang="ts" setup>
 import { ref } from "vue";
-import type MarkdownModuleTableState from "./MarkdownModuleTableState";
+import type MarkdownModuleTableState from "@/components/MarkdownEditor/Modules/MarkdownModuleTableState";
 
 const modelValue = defineModel<MarkdownModuleTableState>({ required: true });
 

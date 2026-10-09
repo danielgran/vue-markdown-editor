@@ -1,10 +1,12 @@
-import type { Blockquote, List as MdastList, Paragraph, PhrasingContent, Table as MdastTable } from "mdast";
+import type {
+  Blockquote, List as MdastList, Paragraph, PhrasingContent, Table as MdastTable,
+} from "mdast";
 import remarkGfmDefault from "remark-gfm";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
 import MarkdownNodeFactory from "../Factory/MarkdownNodeFactory";
 import type { MarkdownAstNode } from "../Types/MarkdownAstNode";
-import MarkdownNodeType, { isTextNodeType } from "../Types/MarkdownAstNodeType";
+import MarkdownNodeType from "../Types/MarkdownAstNodeType";
 
 // Normalize the remark-gfm export across ESM/CJS bundler interop.
 const remarkGfm = (remarkGfmDefault as unknown as { default?: typeof remarkGfmDefault }).default ?? remarkGfmDefault;

@@ -1,6 +1,10 @@
-import { describe, expect, it } from "vitest";
+import {
+  describe, expect, it,
+} from "vitest";
 import MarkdownNodeType from "../../Types/MarkdownAstNodeType";
-import { detectHeadlineTypeFromContent, HEADLINE_TYPE_MAP } from "../HeadlineTypeMap";
+import {
+  detectBlockTypeFromContent, detectHeadlineTypeFromContent, HEADLINE_TYPE_MAP,
+} from "../HeadlineTypeMap";
 
 describe("HEADLINE_TYPE_MAP", () => {
   it("contains entries for h1, h2, and h3", () => {
@@ -110,5 +114,77 @@ describe("detectHeadlineTypeFromContent", () => {
 
     // Assert
     expect(result).toBe(MarkdownNodeType.HEADLINE3);
+  });
+});
+
+describe("detectBlockTypeFromContent", () => {
+  it.each(["-", "*", "+"])("converts %s followed by a space into a bullet list", (prefix) => {
+    // Arrange — markdown for '<prefix> ' is the bare prefix; cursor sits after the space
+    const content = prefix;
+    const cursorPosition = prefix.length + 2;
+
+    // Act
+    const result = detectBlockTypeFromContent(content, cursorPosition);
+
+    // Assert
+    expect(result).toEqual({ type: MarkdownNodeType.LIST, matchedPrefix: prefix });
+  });
+
+  it("does not convert a bare bullet marker without the trailing space", () => {
+    // Arrange — only '-' typed, cursor right after it
+    const content = "-";
+    const cursorPosition = 2;
+
+    // Act
+    const result = detectBlockTypeFromContent(content, cursorPosition);
+
+    // Assert
+    expect(result).toBeNull();
+  });
+
+  it("does not convert while a horizontal rule is being typed", () => {
+    // Arrange — '--' typed, cursor after it
+    const content = "--";
+    const cursorPosition = 3;
+
+    // Act
+    const result = detectBlockTypeFromContent(content, cursorPosition);
+
+    // Assert
+    expect(result).toBeNull();
+  });
+
+  it("still converts '---' into a horizontal rule", () => {
+    // Arrange
+    const content = "---";
+    const cursorPosition = 4;
+
+    // Act
+    const result = detectBlockTypeFromContent(content, cursorPosition);
+
+    // Assert
+    expect(result).toEqual({ type: MarkdownNodeType.HR, matchedPrefix: "---" });
+  });
+
+  it("reports the matched prefix for ordered lists", () => {
+    // Arrange
+    const content = "1.";
+
+    // Act
+    const result = detectBlockTypeFromContent(content, 4);
+
+    // Assert
+    expect(result).toEqual({ type: MarkdownNodeType.ORDERED_LIST, matchedPrefix: "1." });
+  });
+
+  it("ignores a bullet marker that is not at the start of the block", () => {
+    // Arrange
+    const content = "hello -";
+
+    // Act
+    const result = detectBlockTypeFromContent(content, 9);
+
+    // Assert
+    expect(result).toBeNull();
   });
 });

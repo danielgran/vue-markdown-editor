@@ -10,8 +10,8 @@
 
 <script lang="ts" setup>
 import { marked } from "marked";
-import type MarkdownModuleListState from "../../MarkdownEditor/Modules/MarkdownModuleListState";
-import type MarkdownModuleTextState from "../../MarkdownEditor/Modules/MarkdownModuleTextState";
+import type MarkdownModuleListState from "@/components/MarkdownEditor/Modules/MarkdownModuleListState";
+import type MarkdownModuleTextState from "@/components/MarkdownEditor/Modules/MarkdownModuleTextState";
 
 defineProps<{ state: MarkdownModuleListState }>();
 

@@ -1,6 +1,9 @@
 <template>
   <div class="markdown-editor-focus-controls">
-    <span class="drag-handle" title="Drag to reorder"> ⠿ </span>
+    <span
+      class="drag-handle"
+      title="Drag to reorder"
+    > ⠿ </span>
     <button
       class="focus-control-btn"
       type="button"
@@ -35,7 +38,7 @@ const emit = defineEmits<{
   flex-direction: row;
   align-items: center;
   height: 100%;
-  
+
   .drag-handle {
     cursor: grab;
     padding: 0 0.2rem;

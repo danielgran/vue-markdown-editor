@@ -9,11 +9,11 @@
 import StarterKit from "@tiptap/starter-kit";
 import { EditorContent, useEditor } from "@tiptap/vue-3";
 import { ref } from "vue";
-import { activeEditor } from "../Composable/activeEditorStore";
-import useReflectiveState from "../Composable/useReflectiveState";
-import { HeadingDocument, PreventNewline } from "../TipTap/SingleLineExtension";
-import type { TextishEmits } from "../Types/TextishEmits";
-import type MarkdownModuleTextState from "./MarkdownModuleTextState";
+import { activeEditor } from "@/components/MarkdownEditor/Composable/activeEditorStore";
+import useReflectiveState from "@/components/MarkdownEditor/Composable/useReflectiveState";
+import { HeadingDocument } from "@/components/MarkdownEditor/TipTap/SingleLineExtension";
+import type { TextishEmits } from "@/components/MarkdownEditor/Types/TextishEmits";
+import type MarkdownModuleTextState from "@/components/MarkdownEditor/Modules/MarkdownModuleTextState";
 
 const modelValue = defineModel<MarkdownModuleTextState>({
   required: true,
@@ -47,7 +47,7 @@ const editor = useEditor({
       orderedList: false,
       listItem: false,
     }),
-    PreventNewline,
+    state.blockKeys,
   ],
   content: `<h3>${state.editorContent.value}</h3>`,
   onFocus: () => {

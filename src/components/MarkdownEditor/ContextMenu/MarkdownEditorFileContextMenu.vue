@@ -1,8 +1,9 @@
 <template>
   <MarkdownEditorContextMenu
-    :x="x"
     ref="contextMenuRef"
+    :x="x"
     :y="y"
+    :anchor="anchor"
     @mousedown.stop
     @click="$emit('click')"
   >
@@ -20,17 +21,18 @@
   </MarkdownEditorContextMenu>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import { ref } from "vue";
-import MarkdownEditorContextMenu from "./MarkdownEditorContextMenu.vue";
-import MarkdownEditorContextMenuBlockItem from "./MarkdownEditorContextMenuBlockItem.vue";
 import { onClickOutside } from "@vueuse/core";
+import MarkdownEditorContextMenu from "@/components/MarkdownEditor/ContextMenu/MarkdownEditorContextMenu.vue";
+import MarkdownEditorContextMenuBlockItem from "@/components/MarkdownEditor/ContextMenu/MarkdownEditorContextMenuBlockItem.vue";
 
 const contextMenuRef = ref<InstanceType<typeof MarkdownEditorContextMenu> | null>(null);
 
 defineProps<{
   x: number;
   y: number;
+  anchor?: HTMLElement | null;
 }>();
 
 const emit = defineEmits<{
@@ -44,8 +46,8 @@ const emit = defineEmits<{
 onClickOutside(
   () => contextMenuRef.value?.rootEl ?? null,
   () => {
-    emit('close');
-  }
+    emit("close");
+  },
 );
 </script>
 

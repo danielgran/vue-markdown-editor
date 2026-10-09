@@ -1,9 +1,12 @@
-import { type ModelRef, nextTick, ref, watch } from "vue";
+import {
+  type ModelRef, nextTick, ref, watch,
+} from "vue";
 import MarkdownNodeFactory from "../Factory/MarkdownNodeFactory";
 import { isTextNodeState } from "../MarkdownComponentRegistry";
 import type MarkdownModuleFileState from "../Modules/MarkdownModuleFileState";
+import type MarkdownModuleListState from "../Modules/MarkdownModuleListState";
 import type { MarkdownAstNode } from "../Types/MarkdownAstNode";
-import MarkdownNodeType, { isTextNodeType } from "../Types/MarkdownAstNodeType";
+import MarkdownNodeType, { isHeadlineNodeType, isTextNodeType } from "../Types/MarkdownAstNodeType";
 import { parseMarkdown } from "./parseMarkdown";
 import { serializeMarkdown } from "./serializeMarkdown";
 
@@ -33,7 +36,123 @@ function useMarkdownProcessor(modelValue: ModelRef<string | undefined>) {
   function deleteNode(nodeIndex: number) {
     nextTick(() => {
       markdownNodes.value.splice(nodeIndex, 1);
+      mergeAdjacentLists();
     });
+  }
+
+  /**
+   * Merges lists of the same type that ended up next to each other (for
+   * example after the empty paragraph between two split lists is deleted).
+   */
+  function mergeAdjacentLists() {
+    const listTypes = [MarkdownNodeType.LIST, MarkdownNodeType.ORDERED_LIST];
+
+    for (let index = 0; index < markdownNodes.value.length - 1;) {
+      const current = markdownNodes.value[index];
+      const next = markdownNodes.value[index + 1];
+
+      if (current.type === next.type && listTypes.includes(current.type)) {
+        const currentState = current.componentState as MarkdownModuleListState;
+        const nextState = next.componentState as MarkdownModuleListState;
+        currentState.items = [...currentState.items, ...nextState.items];
+        markdownNodes.value.splice(index + 1, 1);
+      } else {
+        index += 1;
+      }
+    }
+  }
+
+  /**
+   * Closes a list at `itemIndex`, replacing it with the items before, an empty
+   * paragraph and the items after. Returns the index of the new paragraph.
+   */
+  function splitListNode(node: MarkdownAstNode, itemIndex: number): number | null {
+    const nodeIndex = markdownNodes.value.indexOf(node);
+    if (nodeIndex === -1) return null;
+
+    const listState = node.componentState as MarkdownModuleListState;
+    if (itemIndex < 0 || itemIndex >= listState.items.length) return null;
+
+    const beforeTexts = listState.items.slice(0, itemIndex).map(item => item.text);
+    const afterTexts = listState.items.slice(itemIndex + 1).map(item => item.text);
+
+    const replacement: MarkdownAstNode[] = [];
+    if (beforeTexts.length > 0) replacement.push(createListLikeNode(node.type, beforeTexts));
+    replacement.push(MarkdownNodeFactory.createBlankParagraph());
+    if (afterTexts.length > 0) replacement.push(createListLikeNode(node.type, afterTexts));
+
+    markdownNodes.value.splice(nodeIndex, 1, ...replacement);
+
+    // The paragraph sits right after the first list half, when there is one.
+    return nodeIndex + (beforeTexts.length > 0 ? 1 : 0);
+  }
+
+  /**
+   * Splits a text node at the caret: the node is replaced by `before` (a fresh
+   * instance, so the module re-renders the shortened content) and `after` moves
+   * into a new node right after it. A headline continues as a paragraph, like
+   * Notion, every other block keeps its own type. Returns the new node index.
+   */
+  /**
+   * Rewrites the content of a text node. Replacing the node remounts its module,
+   * which is what lets a module pick up content the editor dropped from its own
+   * document (the text an Enter deleted) — so nothing happens when it is unchanged.
+   */
+  function updateTextNode(node: MarkdownAstNode, text: string): void {
+    const nodeIndex = markdownNodes.value.indexOf(node);
+    if (nodeIndex === -1) return;
+    if (!isTextNodeState(node) || !isTextNodeType(node.type)) return;
+    if (node.componentState.text === text) return;
+
+    markdownNodes.value.splice(nodeIndex, 1, MarkdownNodeFactory.createTextNode(node.type, text));
+  }
+
+  function splitTextNode(node: MarkdownAstNode, before: string, after: string): number | null {
+    const nodeIndex = markdownNodes.value.indexOf(node);
+    if (nodeIndex === -1) return null;
+    if (!isTextNodeState(node) || !isTextNodeType(node.type)) return null;
+
+    const continuationType = isHeadlineNodeType(node.type) ? MarkdownNodeType.PARAGRAPH : node.type;
+
+    markdownNodes.value.splice(
+      nodeIndex,
+      1,
+      MarkdownNodeFactory.createTextNode(node.type, before),
+      MarkdownNodeFactory.createTextNode(continuationType, after),
+    );
+
+    return nodeIndex + 1;
+  }
+
+  /**
+   * Appends a text node to the text node above it, which keeps its own type, and
+   * removes the node itself. Returns the merged node together with the markdown
+   * it took over from above, or null when there is no text block above.
+   */
+  function mergeTextNodeIntoPrevious(
+    node: MarkdownAstNode,
+  ): { node: MarkdownAstNode; index: number; aboveText: string } | null {
+    const nodeIndex = markdownNodes.value.indexOf(node);
+    if (nodeIndex <= 0) return null;
+    if (!isTextNodeState(node) || !isTextNodeType(node.type)) return null;
+
+    const previous = markdownNodes.value[nodeIndex - 1];
+    if (!previous || !isTextNodeState(previous) || !isTextNodeType(previous.type)) return null;
+
+    const aboveText = previous.componentState.text;
+    const merged = MarkdownNodeFactory.createTextNode(previous.type, aboveText + node.componentState.text);
+
+    markdownNodes.value.splice(nodeIndex - 1, 2, merged);
+
+    return {
+      node: merged, index: nodeIndex - 1, aboveText,
+    };
+  }
+
+  function createListLikeNode(type: MarkdownNodeType, texts: string[]): MarkdownAstNode {
+    return type === MarkdownNodeType.ORDERED_LIST
+      ? MarkdownNodeFactory.createOrderedListNode(texts)
+      : MarkdownNodeFactory.createListNode(texts);
   }
 
   function addBlankNode(nodeIndex: number) {
@@ -95,17 +214,23 @@ function useMarkdownProcessor(modelValue: ModelRef<string | undefined>) {
     throw new Error(`Unsupported node type: ${newType}`);
   }
 
+  /**
+   * Converts a block into `newType`. Without an explicit `text` the current
+   * content is kept, which makes converting into the node's own type a no-op;
+   * passing a text replaces the content (e.g. to drop a slash command trigger).
+   */
   function replaceNodeType(
     node: MarkdownAstNode,
     newType: MarkdownNodeType,
+    text?: string,
   ): { newNode: MarkdownAstNode; index: number } | null {
     // If the node is already of the desired type, do nothing
-    if (node.type === newType) return null;
+    if (text === undefined && node.type === newType) return null;
 
     const nodeIndex = markdownNodes.value.indexOf(node);
     if (nodeIndex === -1) return null;
 
-    const currentText = isTextNodeState(node) ? node.componentState.text : "";
+    const currentText = text ?? (isTextNodeState(node) ? node.componentState.text : "");
     const newNode = createNodeWithType(currentText, newType);
 
     markdownNodes.value.splice(nodeIndex, 1, newNode);
@@ -125,6 +250,10 @@ function useMarkdownProcessor(modelValue: ModelRef<string | undefined>) {
     addNodeWithType,
     replaceNodeType,
     moveNode,
+    splitListNode,
+    updateTextNode,
+    splitTextNode,
+    mergeTextNodeIntoPrevious,
   };
 }
 

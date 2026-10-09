@@ -4,15 +4,15 @@
       ref="rootEl"
       v-bind="$attrs"
       class="markdown-editor-context-menu"
-      :style="positionStyle"
     >
       <slot />
     </div>
   </Teleport>
 </template>
 
-<script setup lang="ts">
-import { computed, ref } from "vue";
+<script lang="ts" setup>
+import { ref, toRef } from "vue";
+import useFloatingPosition, { type FloatingPlacement } from "@/components/MarkdownEditor/Composable/useFloatingPosition";
 
 defineOptions({ inheritAttrs: false });
 
@@ -23,23 +23,20 @@ defineExpose({ rootEl });
 const props = defineProps<{
   x: number;
   y: number;
-  placement?: "above" | "below";
+  placement?: FloatingPlacement;
+  /**
+   * Element the point belongs to. With an anchor the menu keeps its place while the
+   * page scrolls, without one the point is taken as it is.
+   */
+  anchor?: HTMLElement | null;
 }>();
 
-const positionStyle = computed(() => {
-  const base = {
-    left: `${props.x}px`,
-    top: `${props.y}px`,
-  };
-
-  if (props.placement === "above") {
-    return {
-      ...base,
-      transform: "translateX(-50%) translateY(calc(-100% - 8px))",
-    };
-  }
-
-  return base;
+useFloatingPosition({
+  x: toRef(props, "x"),
+  y: toRef(props, "y"),
+  anchor: toRef(props, "anchor"),
+  placement: toRef(props, "placement"),
+  floatingRef: rootEl,
 });
 </script>
 

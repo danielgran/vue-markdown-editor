@@ -4,7 +4,6 @@
     class="markdown-module-file"
     @click="handleClick"
   >
-    <!-- Success state: download card -->
     <div
       v-if="modelValue.url && !modelValue.uploadError"
       class="markdown-module-file-card"
@@ -23,7 +22,6 @@
       </div>
     </div>
 
-    <!-- Error state -->
     <div
       v-else-if="modelValue.uploadError"
       class="markdown-module-file-card markdown-module-file-card--error"
@@ -42,7 +40,6 @@
       </div>
     </div>
 
-    <!-- Loading state -->
     <div
       v-else
       class="markdown-module-file-card markdown-module-file-card--loading"
@@ -58,6 +55,7 @@
       ref="contextMenuRef"
       :x="contextMenuPosition.x"
       :y="contextMenuPosition.y"
+      :anchor="divRef ?? null"
       @edit-attributes="openAttributesModal"
       @download="handleDownload"
       @retry="handleRetry"
@@ -97,11 +95,11 @@
 
 <script lang="ts" setup>
 import { computed, ref } from "vue";
-import MarkdownEditorFileContextMenu from "../ContextMenu/MarkdownEditorFileContextMenu.vue";
-import MarkdownEditorModal from "../MarkdownEditorModal.vue";
-import type MarkdownModuleFileState from "./MarkdownModuleFileState";
+import MarkdownEditorFileContextMenu from "@/components/MarkdownEditor/ContextMenu/MarkdownEditorFileContextMenu.vue";
+import MarkdownEditorModal from "@/components/MarkdownEditor/MarkdownEditorModal.vue";
+import type MarkdownModuleFileState from "@/components/MarkdownEditor/Modules/MarkdownModuleFileState";
 
-const divRef = ref<HTMLDivElement>();
+const divRef = ref<HTMLDivElement | null>(null);
 
 const modelValue = defineModel<MarkdownModuleFileState>({
   required: true,
@@ -111,11 +109,9 @@ const emit = defineEmits<{
   "retry-upload": [fileState: MarkdownModuleFileState];
 }>();
 
-// Context menu state
 const showContextMenu = ref(false);
 const contextMenuPosition = ref({ x: 0, y: 0 });
 
-// Modal state
 const showModal = ref(false);
 const editForm = ref({
   url: "",
@@ -220,147 +216,149 @@ defineExpose({ focus });
   &:focus {
     outline: none;
   }
-}
 
-.markdown-module-file-card {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  background: #f9fafb;
-  transition: border-color 0.15s ease;
+  .markdown-module-file-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background: #f9fafb;
+    transition: border-color 0.15s ease;
 
-  &:hover {
-    border-color: #3b82f6;
+    &:hover {
+      border-color: #3b82f6;
+    }
+
+    &--error {
+      background: #fef2f2;
+      border-color: #fecaca;
+    }
+
+    &--loading {
+      background: #f9fafb;
+      border-color: #e5e7eb;
+      cursor: default;
+    }
   }
-}
 
-.markdown-module-file-card--error {
-  background: #fef2f2;
-  border-color: #fecaca;
-}
-
-.markdown-module-file-card--loading {
-  background: #f9fafb;
-  border-color: #e5e7eb;
-  cursor: default;
-}
-
-.markdown-module-file-icon {
-  font-size: 1.5rem;
-  flex-shrink: 0;
-  line-height: 1;
-}
-
-.markdown-module-file-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-  min-width: 0;
-}
-
-.markdown-module-file-name {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #111827;
-  text-decoration: none;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-
-  &:hover {
-    color: #3b82f6;
-    text-decoration: underline;
+  .markdown-module-file-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    line-height: 1;
   }
-}
 
-.markdown-module-file-size {
-  font-size: 0.75rem;
-  color: #6b7280;
-}
-
-.markdown-module-file-error-text {
-  font-size: 0.75rem;
-  color: #dc2626;
-}
-
-.markdown-module-file-loading-text {
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-
-.markdown-module-file-retry-btn {
-  margin-top: 0.25rem;
-  padding: 0.25rem 0.75rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #dc2626;
-  background: transparent;
-  border: 1px solid #fca5a5;
-  border-radius: 0.375rem;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  width: fit-content;
-
-  &:hover {
-    background: #fef2f2;
-    border-color: #f87171;
+  .markdown-module-file-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-width: 0;
   }
-}
 
-.markdown-module-file-spinner {
-  width: 1.25rem;
-  height: 1.25rem;
-  border: 2px solid #e5e7eb;
-  border-top-color: #3b82f6;
-  border-radius: 50%;
-  animation: markdown-module-file-spin 0.6s linear infinite;
-  flex-shrink: 0;
+  .markdown-module-file-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #111827;
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &:hover {
+      color: #3b82f6;
+      text-decoration: underline;
+    }
+  }
+
+  .markdown-module-file-size {
+    font-size: 0.75rem;
+    color: #6b7280;
+  }
+
+  .markdown-module-file-error-text {
+    font-size: 0.75rem;
+    color: #dc2626;
+  }
+
+  .markdown-module-file-loading-text {
+    font-size: 0.875rem;
+    color: #6b7280;
+  }
+
+  .markdown-module-file-retry-btn {
+    margin-top: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #dc2626;
+    background: transparent;
+    border: 1px solid #fca5a5;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    width: fit-content;
+
+    &:hover {
+      background: #fef2f2;
+      border-color: #f87171;
+    }
+  }
+
+  .markdown-module-file-spinner {
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid #e5e7eb;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: markdown-module-file-spin 0.6s linear infinite;
+    flex-shrink: 0;
+  }
+
+  // The attribute form lives inside the modal's <Teleport to="body">, so it is not
+  // a DOM descendant of the block and its selectors must stay at the root.
+  @at-root .markdown-module-file-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+
+    &-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #374151;
+      }
+
+      input {
+        padding: 0.625rem 0.875rem;
+        font-size: 0.875rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        background: #ffffff;
+        color: #111827;
+        transition: all 0.15s ease;
+
+        &:focus {
+          outline: none;
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        &::placeholder {
+          color: #9ca3af;
+        }
+      }
+    }
+  }
 }
 
 @keyframes markdown-module-file-spin {
   to {
     transform: rotate(360deg);
-  }
-}
-
-.markdown-module-file-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.markdown-module-file-form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-
-  label {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #374151;
-  }
-
-  input {
-    padding: 0.625rem 0.875rem;
-    font-size: 0.875rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.5rem;
-    background: #ffffff;
-    color: #111827;
-    transition: all 0.15s ease;
-
-    &:focus {
-      outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-
-    &::placeholder {
-      color: #9ca3af;
-    }
   }
 }
 </style>

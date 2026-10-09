@@ -15,6 +15,7 @@
       ref="contextMenuRef"
       :x="contextMenuPosition.x"
       :y="contextMenuPosition.y"
+      :anchor="divRef ?? null"
       @edit-attributes="openAttributesModal"
       @close="() => showContextMenu = false"
     />
@@ -39,7 +40,6 @@
         <div class="markdown-module-image-form-field">
           <label for="image-alt">Alt Text</label>
           <input
-
             id="image-alt"
             v-model="editForm.alt"
             type="text"
@@ -63,24 +63,19 @@
 
 <script lang="ts" setup>
 import { ref } from "vue";
-import MarkdownEditorImageContextMenu from "../ContextMenu/MarkdownEditorImageContextMenu.vue";
-import MarkdownEditorModal from "../MarkdownEditorModal.vue";
-import type MarkdownModuleImageState from "./MarkdownModuleImageState";
-import { onClickOutside } from '@vueuse/core'
+import MarkdownEditorImageContextMenu from "@/components/MarkdownEditor/ContextMenu/MarkdownEditorImageContextMenu.vue";
+import MarkdownEditorModal from "@/components/MarkdownEditor/MarkdownEditorModal.vue";
+import type MarkdownModuleImageState from "@/components/MarkdownEditor/Modules/MarkdownModuleImageState";
 
-const divRef = ref<HTMLDivElement>();
+const divRef = ref<HTMLDivElement | null>(null);
 
 const modelValue = defineModel<MarkdownModuleImageState>({
   required: true,
 });
 
-// Context menu state
 const showContextMenu = ref(false);
 const contextMenuPosition = ref({ x: 0, y: 0 });
 
-
-
-// Modal state
 const showModal = ref(false);
 const editForm = ref({
   src: "",
@@ -144,42 +139,44 @@ defineExpose({ focus });
     font-size: 0.875rem;
     color: #6b7280;
   }
-}
 
-.markdown-module-image-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
+  // The edit form lives inside the modal's <Teleport to="body">, so it is not a
+  // DOM descendant of the block and its selectors must stay at the root.
+  @at-root .markdown-module-image-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
 
-.markdown-module-image-form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+    &-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
 
-  label {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #374151;
-  }
+      label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #374151;
+      }
 
-  input {
-    padding: 0.625rem 0.875rem;
-    font-size: 0.875rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.5rem;
-    background: #ffffff;
-    color: #111827;
-    transition: all 0.15s ease;
+      input {
+        padding: 0.625rem 0.875rem;
+        font-size: 0.875rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        background: #ffffff;
+        color: #111827;
+        transition: all 0.15s ease;
 
-    &:focus {
-      outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
+        &:focus {
+          outline: none;
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
 
-    &::placeholder {
-      color: #9ca3af;
+        &::placeholder {
+          color: #9ca3af;
+        }
+      }
     }
   }
 }

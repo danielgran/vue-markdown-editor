@@ -1,4 +1,6 @@
-import { onMounted, onUnmounted, ref } from "vue";
+import {
+  onMounted, onUnmounted, ref,
+} from "vue";
 
 export interface TextSelectionActiveStates {
   bold: boolean;
@@ -10,6 +12,7 @@ export interface TextSelectionMenuState {
   isVisible: ReturnType<typeof ref<boolean>>;
   anchorX: ReturnType<typeof ref<number>>;
   anchorY: ReturnType<typeof ref<number>>;
+  anchorEl: ReturnType<typeof ref<HTMLElement | null>>;
   activeStates: ReturnType<typeof ref<TextSelectionActiveStates>>;
   hide: () => void;
 }
@@ -29,6 +32,7 @@ function useTextSelectionMenu() {
   const isVisible = ref(false);
   const anchorX = ref(0);
   const anchorY = ref(0);
+  const anchorEl = ref<HTMLElement | null>(null);
   const activeStates = ref<TextSelectionActiveStates>({
     bold: false,
     italic: false,
@@ -64,6 +68,9 @@ function useTextSelectionMenu() {
 
     const parentElement = range.commonAncestorContainer.parentElement;
     if (parentElement) {
+      // Anchor the menu to the block the selection sits in, so it follows the
+      // selection while the page scrolls.
+      anchorEl.value = parentElement.closest<HTMLElement>(".markdown-editor-module-content") ?? parentElement;
       activeStates.value = {
         bold: isElementOrParentTagName(parentElement, ["STRONG", "B"]),
         italic: isElementOrParentTagName(parentElement, ["EM", "I"]),
@@ -106,7 +113,9 @@ function useTextSelectionMenu() {
     if (debounceTimer) clearTimeout(debounceTimer);
   });
 
-  return { isVisible, anchorX, anchorY, activeStates, hide };
+  return {
+    isVisible, anchorX, anchorY, anchorEl, activeStates, hide,
+  };
 }
 
 export default useTextSelectionMenu;

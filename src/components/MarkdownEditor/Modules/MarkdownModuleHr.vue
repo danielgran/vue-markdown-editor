@@ -11,7 +11,7 @@
 
 <script lang="ts" setup>
 import { ref } from "vue";
-import type MarkdownModuleHrState from "./MarkdownModuleHrState";
+import type MarkdownModuleHrState from "@/components/MarkdownEditor/Modules/MarkdownModuleHrState";
 
 defineModel<MarkdownModuleHrState>({ required: true });
 

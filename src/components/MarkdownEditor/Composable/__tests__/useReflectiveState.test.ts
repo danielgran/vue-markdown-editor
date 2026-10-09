@@ -1,5 +1,8 @@
 import { ref } from "vue";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  beforeEach, describe, expect, it, vi,
+} from "vitest";
+import { marked } from "marked";
 import MarkdownModuleTextState from "../../Modules/MarkdownModuleTextState";
 import MarkdownNodeType from "../../Types/MarkdownAstNodeType";
 import type { TextishEmitFunction } from "../../Types/TextishEmits";
@@ -20,14 +23,13 @@ vi.mock("turndown", () => {
   return { default: MockTurndown };
 });
 
-// Also mock detectHeadlineTypeFromContent as a second-layer dep
+// Also mock detectBlockTypeFromContent as a second-layer dep
 vi.mock("../HeadlineTypeMap", () => ({
-  detectHeadlineTypeFromContent: vi.fn(() => null),
+  detectBlockTypeFromContent: vi.fn(() => null),
 }));
 
 import useReflectiveState from "../useReflectiveState";
-import { detectHeadlineTypeFromContent } from "../HeadlineTypeMap";
-import { marked } from "marked";
+import { detectBlockTypeFromContent } from "../HeadlineTypeMap";
 
 // --- Helpers ---
 function makeTextState(text: string) {
@@ -51,7 +53,7 @@ describe("useReflectiveState", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(marked.parseInline).mockImplementation((md: string) => `<mock-html>${md}</mock-html>`);
-    vi.mocked(detectHeadlineTypeFromContent).mockReturnValue(null);
+    vi.mocked(detectBlockTypeFromContent).mockReturnValue(null);
   });
 
   describe("initialization", () => {
@@ -165,9 +167,9 @@ describe("useReflectiveState", () => {
       expect(emit).toHaveBeenCalledWith("update:cursor-position", 12);
     });
 
-    it("emits 'change-type' when detectHeadlineTypeFromContent returns a type", async () => {
+    it("emits 'change-type' when detectBlockTypeFromContent returns a type", async () => {
       // Arrange
-      vi.mocked(detectHeadlineTypeFromContent).mockReturnValue(MarkdownNodeType.HEADLINE1);
+      vi.mocked(detectBlockTypeFromContent).mockReturnValue({ type: MarkdownNodeType.HEADLINE1, matchedPrefix: "#" });
 
       const state = makeTextState("initial");
       const modelRef = makeModelRef(state);
@@ -186,9 +188,9 @@ describe("useReflectiveState", () => {
       expect(emit).toHaveBeenCalledWith("change-type", MarkdownNodeType.HEADLINE1);
     });
 
-    it("does not emit 'change-type' when detectHeadlineTypeFromContent returns null", async () => {
+    it("does not emit 'change-type' when detectBlockTypeFromContent returns null", async () => {
       // Arrange
-      vi.mocked(detectHeadlineTypeFromContent).mockReturnValue(null);
+      vi.mocked(detectBlockTypeFromContent).mockReturnValue(null);
 
       const state = makeTextState("initial");
       const modelRef = makeModelRef(state);
@@ -205,6 +207,31 @@ describe("useReflectiveState", () => {
 
       // Assert
       expect(emit).not.toHaveBeenCalledWith("change-type", expect.anything());
+    });
+
+    it("strips the trigger prefix from the block text before converting", async () => {
+      // Arrange — typing "- " turns the markdown into "-"
+      vi.mocked(detectBlockTypeFromContent).mockReturnValue({
+        type: MarkdownNodeType.LIST,
+        matchedPrefix: "-",
+      });
+
+      const state = makeTextState("-");
+      const modelRef = makeModelRef(state);
+      const emit = makeEmit();
+      const { handleTipTapUpdateEvent } = useReflectiveState({ modelRef, emit });
+
+      const fakeEvent = {
+        editor: { getHTML: vi.fn(() => "<p>- </p>"), commands: { focus: vi.fn() } },
+        transaction: { selection: { anchor: 3 } },
+      };
+
+      // Act
+      await handleTipTapUpdateEvent(fakeEvent as never);
+
+      // Assert
+      expect(modelRef.value.text).toBe("");
+      expect(emit).toHaveBeenCalledWith("change-type", MarkdownNodeType.LIST);
     });
   });
 

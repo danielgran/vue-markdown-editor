@@ -1,4 +1,6 @@
-import { describe, expect, it } from "vitest";
+import {
+  describe, expect, it,
+} from "vitest";
 import type MarkdownModuleImageState from "../../Modules/MarkdownModuleImageState";
 import type { MarkdownAstNode } from "../../Types/MarkdownAstNode";
 import MarkdownNodeType from "../../Types/MarkdownAstNodeType";
@@ -22,7 +24,7 @@ function singleNode(markdown: string): MarkdownAstNode {
 describe("parseMarkdown + serializeMarkdown round-trip (real pipeline)", () => {
   it("parses an image block whose src URL is auto-linked by GFM into an IMAGE node", () => {
     // Arrange
-    const markdown = '"""MarkdownModuleImage\nsrc: https://example.com/pic.png\nalt: A scenic view\ncaption: My caption\n"""';
+    const markdown = "\"\"\"MarkdownModuleImage\nsrc: https://example.com/pic.png\nalt: A scenic view\ncaption: My caption\n\"\"\"";
 
     // Act
     const node = singleNode(markdown);
@@ -38,7 +40,7 @@ describe("parseMarkdown + serializeMarkdown round-trip (real pipeline)", () => {
 
   it("parses an image block with URLs in src, alt and caption into an IMAGE node", () => {
     // Arrange — every URL is auto-linked, splitting the block into many children
-    const markdown = '"""MarkdownModuleImage\nsrc: https://example.com/banner.png\nalt: See https://example.com/alt for details\ncaption: Learn more at https://example.com/guide\n"""';
+    const markdown = "\"\"\"MarkdownModuleImage\nsrc: https://example.com/banner.png\nalt: See https://example.com/alt for details\ncaption: Learn more at https://example.com/guide\n\"\"\"";
 
     // Act
     const node = singleNode(markdown);
@@ -54,7 +56,7 @@ describe("parseMarkdown + serializeMarkdown round-trip (real pipeline)", () => {
 
   it("parses a file block whose url is auto-linked by GFM into a FILE node", () => {
     // Arrange
-    const markdown = '"""MarkdownModuleFile\nurl: https://example.com/files/report.pdf\nfileName: quarterly report.pdf\nfileSize: 24576\nmimeType: application/pdf\n"""';
+    const markdown = "\"\"\"MarkdownModuleFile\nurl: https://example.com/files/report.pdf\nfileName: quarterly report.pdf\nfileSize: 24576\nmimeType: application/pdf\n\"\"\"";
 
     // Act
     const node = singleNode(markdown);
@@ -159,7 +161,7 @@ describe("parseMarkdown + serializeMarkdown round-trip (real pipeline)", () => {
       "",
       "## Code",
       "",
-      '```ts\nconst ok = true;\n```',
+      "```ts\nconst ok = true;\n```",
       "",
       "## Divider",
       "",
@@ -173,7 +175,7 @@ describe("parseMarkdown + serializeMarkdown round-trip (real pipeline)", () => {
       "1. Ordered one",
       "2. Ordered two",
       "",
-      '"""MarkdownModuleImage\nsrc: https://example.com/photo.jpg\nalt: Photo\ncaption: Caption\n"""',
+      "\"\"\"MarkdownModuleImage\nsrc: https://example.com/photo.jpg\nalt: Photo\ncaption: Caption\n\"\"\"",
     ].join("\n");
 
     // Act
