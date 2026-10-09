@@ -7,7 +7,11 @@ on:
       - main
 
 jobs:
+  playwright:
+    uses: ./.github/workflows/playwright.yml
+
   build-and-publish:
+    needs: playwright
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -45,4 +49,3 @@ jobs:
             npm version "${PRERELEASE_VERSION}" --no-git-tag-version
             npm publish --access public --tag dev
           fi
-

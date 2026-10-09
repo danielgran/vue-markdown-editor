@@ -621,11 +621,11 @@ The dev server launches at `http://localhost:4010`. The entry point is `dev/App.
 Install the Playwright browser once, then run the end-to-end suite:
 
 ```bash
-npx playwright install chromium
+npx playwright install chromium firefox webkit
 npm run test:e2e
 ```
 
-The suite starts the Vite showcase automatically and covers the Notion-like slash menu, keyboard navigation, block insertion, block splitting, and Markdown serialization.
+The suite starts the Vite showcase automatically and covers the Notion-like slash menu, keyboard navigation, block insertion, block splitting, and Markdown serialization. CI runs the suite as a parallel browser matrix on Chromium, Firefox, and WebKit. WebKit provides Safari engine coverage; run Safari-specific validation on macOS separately when native Safari behavior is required.
 
 ---
 

@@ -1,0 +1,9 @@
+name: End-to-end browser tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  playwright:
+    uses: ./.github/workflows/playwright.yml
